@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: cryptosignai-miniapp
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: BOT_TOKEN
+        value: 8053605696:AAEkjm-7Uj8DTpvgjIaVSTbESxxgW2NJdng
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /
