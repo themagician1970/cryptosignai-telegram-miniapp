@@ -7,9 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "echo 'Building Mini App...' && npm run copy-assets",
-    "copy-assets": "cp -r telegram-mini-app/* public/",
-    "deploy": "npm run build && echo 'Deploy to your hosting service'"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "telegram",
@@ -22,15 +20,11 @@
   "author": "CryptoSignAI Team",
   "license": "MIT",
   "dependencies": {
-    "@mathieuc/tradingview": "^3.5.1",
     "@twa-dev/sdk": "^7.0.0",
-    "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "multer": "^1.4.5-lts.1",
-    "node-fetch": "^3.3.2",
-    "node-telegram-bot-api": "^0.64.0",
-    "sharp": "^0.33.0"
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

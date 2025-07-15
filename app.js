@@ -1,12 +1,10 @@
-// Telegram Mini App JavaScript
+// CryptoSignAI Telegram Mini App
 class CryptoSignAI {
     constructor() {
         this.tg = window.Telegram.WebApp;
         this.currentTab = 'analysis';
         this.tradingViewWidget = null;
-        this.apiBaseUrl = window.location.hostname === 'localhost' 
-            ? 'http://localhost:3000' 
-            : 'https://your-server.com'; // Replace with your actual server URL
+        this.apiBaseUrl = window.location.origin;
         
         this.init();
     }
@@ -16,7 +14,7 @@ class CryptoSignAI {
         this.tg.ready();
         this.tg.expand();
         
-        // Set up theme
+        // Apply Telegram theme
         this.setupTheme();
         
         // Initialize user info
@@ -25,31 +23,25 @@ class CryptoSignAI {
         // Set up event listeners
         this.setupEventListeners();
         
-        // Initialize TradingView chart
+        // Initialize chart on charts tab
         this.initTradingViewChart();
         
-        // Load initial data
-        this.loadInitialData();
-        
-        console.log('CryptoSignAI Mini App initialized');
+        console.log('✅ CryptoSignAI Mini App initialized');
     }
 
     setupTheme() {
         // Apply Telegram theme colors
-        if (this.tg.colorScheme === 'dark') {
-            document.documentElement.style.setProperty('--tg-theme-bg-color', this.tg.themeParams.bg_color || '#1e1e1e');
-            document.documentElement.style.setProperty('--tg-theme-text-color', this.tg.themeParams.text_color || '#ffffff');
-            document.documentElement.style.setProperty('--tg-theme-hint-color', this.tg.themeParams.hint_color || '#a0a0a0');
-            document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', this.tg.themeParams.secondary_bg_color || '#2d2d2d');
-        } else {
-            document.documentElement.style.setProperty('--tg-theme-bg-color', this.tg.themeParams.bg_color || '#ffffff');
-            document.documentElement.style.setProperty('--tg-theme-text-color', this.tg.themeParams.text_color || '#000000');
-            document.documentElement.style.setProperty('--tg-theme-hint-color', this.tg.themeParams.hint_color || '#707579');
-            document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', this.tg.themeParams.secondary_bg_color || '#f1f1f1');
-        }
+        const isDark = this.tg.colorScheme === 'dark';
+        const theme = this.tg.themeParams;
         
-        // Set button color
-        document.documentElement.style.setProperty('--primary-color', this.tg.themeParams.button_color || '#2481cc');
+        document.documentElement.style.setProperty('--tg-theme-bg-color', 
+            theme.bg_color || (isDark ? '#1e1e1e' : '#ffffff'));
+        document.documentElement.style.setProperty('--tg-theme-text-color', 
+            theme.text_color || (isDark ? '#ffffff' : '#000000'));
+        document.documentElement.style.setProperty('--tg-theme-hint-color', 
+            theme.hint_color || (isDark ? '#a0a0a0' : '#707579'));
+        document.documentElement.style.setProperty('--primary-color', 
+            theme.button_color || '#2481cc');
     }
 
     initializeUser() {
@@ -118,10 +110,6 @@ class CryptoSignAI {
         // Initialize tab-specific content
         if (tabName === 'charts' && !this.tradingViewWidget) {
             setTimeout(() => this.initTradingViewChart(), 100);
-        } else if (tabName === 'signals') {
-            this.loadSignals();
-        } else if (tabName === 'portfolio') {
-            this.loadPortfolio();
         }
     }
 
@@ -290,87 +278,11 @@ class CryptoSignAI {
         this.tg.showAlert('📊 Chart sent to AI for analysis. Check your Telegram chat for results!');
     }
 
-    async loadSignals() {
-        try {
-            const response = await fetch(`${this.apiBaseUrl}/api/signals`);
-            if (response.ok) {
-                const signals = await response.json();
-                this.displaySignals(signals);
-            }
-        } catch (error) {
-            console.error('Error loading signals:', error);
-        }
-    }
-
-    displaySignals(signals) {
-        const signalsList = document.getElementById('signals-list');
-        
-        if (!signals || signals.length === 0) {
-            signalsList.innerHTML = '<p>No active signals</p>';
-            return;
-        }
-        
-        signalsList.innerHTML = signals.map(signal => `
-            <div class="signal-card">
-                <div class="signal-header">
-                    <span class="signal-pair">${signal.pair}</span>
-                    <span class="signal-type ${signal.type.toLowerCase()}">${signal.type}</span>
-                </div>
-                <div class="signal-details">
-                    <p><strong>Entry:</strong> ${signal.entry}</p>
-                    <p><strong>TP:</strong> ${signal.takeProfit}</p>
-                    <p><strong>SL:</strong> ${signal.stopLoss}</p>
-                    <p><strong>R:R:</strong> ${signal.riskReward}</p>
-                </div>
-                <div class="signal-time">${signal.time}</div>
-            </div>
-        `).join('');
-    }
-
-    async loadPortfolio() {
-        try {
-            const userId = this.tg.initDataUnsafe?.user?.id;
-            if (!userId) return;
-            
-            const response = await fetch(`${this.apiBaseUrl}/api/portfolio?userId=${userId}`);
-            if (response.ok) {
-                const portfolio = await response.json();
-                this.displayPortfolio(portfolio);
-            }
-        } catch (error) {
-            console.error('Error loading portfolio:', error);
-        }
-    }
-
-    displayPortfolio(portfolio) {
-        // Update balance display
-        document.querySelector('.balance').textContent = portfolio.balance || '$0.00';
-        document.querySelector('.balance-change').textContent = portfolio.change || '0%';
-        document.querySelector('.balance-change').className = 
-            `balance-change ${portfolio.changeType || 'neutral'}`;
-    }
-
-    async loadInitialData() {
-        // Load any initial data needed
-        if (this.currentTab === 'signals') {
-            await this.loadSignals();
-        }
-        if (this.currentTab === 'portfolio') {
-            await this.loadPortfolio();
-        }
-    }
-
-    showLoading(message = 'Loading...') {
-        const overlay = document.getElementById('loading-overlay');
-        overlay.querySelector('p').textContent = message;
-        overlay.style.display = 'flex';
-    }
-
     hideLoading() {
         document.getElementById('loading-overlay').style.display = 'none';
     }
 
-    // Utility method to send data to Telegram bot
+    // Send data to Telegram bot
     sendToTelegramBot(action, data) {
         const message = {
             action: action,
@@ -379,28 +291,20 @@ class CryptoSignAI {
             timestamp: Date.now()
         };
         
-        // Send via postMessage to parent (Telegram)
         if (this.tg.sendData) {
             this.tg.sendData(JSON.stringify(message));
         }
     }
 }
 
-// Initialize the app when DOM is loaded
+// Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
     new CryptoSignAI();
 });
 
-// Handle visibility changes
+// Handle app lifecycle
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
-        // App became visible, refresh data if needed
         console.log('App became visible');
     }
-});
-
-// Handle Telegram Web App events
-window.addEventListener('beforeunload', () => {
-    // Save any necessary data before the app closes
-    console.log('App is closing');
 });

@@ -1,9 +1,8 @@
-// Enhanced Server for Telegram Mini App Integration
+// CryptoSignAI Telegram Mini App Server
 import fetch from 'node-fetch';
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -13,122 +12,89 @@ const __dirname = dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configure multer for file uploads
+// Configure multer for chart image uploads
 const upload = multer({
   dest: 'uploads/',
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed'));
+      cb(new Error('Only image files allowed'));
     }
   }
 });
 
 // Middleware
 app.use(cors({
-  origin: ['https://your-domain.com', 'http://localhost:3000', 'https://localhost:3000'],
+  origin: [
+    'https://web.telegram.org',
+    'https://k.web.telegram.org',
+    'http://localhost:3000'
+  ],
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(__dirname));
 
-// API Keys (Replace with your actual API keys)
-const alphaVantageApiKey = process.env.ALPHA_VANTAGE_API_KEY || 'JHAUBJXIG3L5PDHE';
-const geminiApiKey = process.env.GEMINI_API_KEY || 'AIzaSyBInb8NV46VBFOsSsEiEOqWuGq5wS8Y8U4';
-const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
+// API Configuration
+const API_KEYS = {
+  gemini: process.env.GEMINI_API_KEY,
+  alphaVantage: process.env.ALPHA_VANTAGE_API_KEY,
+  telegramBot: process.env.TELEGRAM_BOT_TOKEN
+};
+
+// Validate required environment variables
+if (!API_KEYS.gemini || !API_KEYS.alphaVantage) {
+  console.error('❌ Missing required API keys in environment variables');
+  process.exit(1);
+}
 
 // Serve Mini App
 app.get('/', (req, res) => {
   res.sendFile(join(__dirname, 'index.html'));
 });
 
-// Existing analysis endpoint (enhanced)
+// Main analysis endpoint
 app.get('/api/analyze', async (req, res) => {
   const symbol = req.query.symbol || 'BTCUSD';
   const interval = '15min';
-  const exchange = 'BINANCE';
 
-  const alphaVantageUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=${interval}&apikey=${alphaVantageApiKey}&outputsize=compact&datatype=json&market=${exchange}`;
-
-  console.log(`[MINI-APP] Analyzing ${exchange}:${symbol} with interval ${interval}`);
+  console.log(`[API] Analyzing ${symbol}`);
 
   try {
-    const alphaVantageResponse = await fetch(alphaVantageUrl);
-    const data = await alphaVantageResponse.json();
+    const marketDataUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=${interval}&apikey=${API_KEYS.alphaVantage}&outputsize=compact&datatype=json`;
+    
+    const response = await fetch(marketDataUrl);
+    const data = await response.json();
 
-    if (data && data['Time Series (15min)']) {
+    if (data['Time Series (15min)']) {
       const timeSeriesData = data['Time Series (15min)'];
       const latestTimestamp = Object.keys(timeSeriesData)[0];
       const latestPrice = parseFloat(timeSeriesData[latestTimestamp]['4. close']);
 
-      const prompt = `Based on the latest 15-minute trading data for ${symbol} from Binance, where the current price is ${latestPrice}, provide a comprehensive trading analysis including:
+      // Generate AI analysis
+      const analysis = await generateAIAnalysis(symbol, latestPrice, timeSeriesData);
       
-      1. Market trend (Bullish/Bearish/Sideways)
-      2. Recommended position (Long/Short/Hold)
-      3. Entry price with confirmation signals
-      4. Take profit levels (TP1, TP2, TP3)
-      5. Stop loss level
-      6. Risk-to-reward ratio
-      7. Confidence percentage
-      
-      Format your response for a trading platform display.`;
-
-      const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
-
-      try {
-        const geminiResponse = await fetch(geminiApiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generation_config: { max_output_tokens: 500 }
-          })
-        });
-        
-        const geminiData = await geminiResponse.json();
-        const analysisText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        // Extract trading recommendations from AI response
-        const recommendations = extractTradingRecommendations(analysisText, latestPrice);
-
-        res.json({
-          success: true,
-          analysis: analysisText,
-          recommendations: recommendations,
-          marketData: {
-            symbol: symbol,
-            currentPrice: latestPrice,
-            timestamp: latestTimestamp,
-            exchange: exchange
-          }
-        });
-
-      } catch (error) {
-        console.error('[MINI-APP] Error during Gemini analysis:', error);
-        res.status(500).json({ 
-          success: false, 
-          error: 'AI analysis failed',
-          message: 'Unable to generate analysis at this time'
-        });
-      }
-
-    } else {
-      console.log('[MINI-APP] Alpha Vantage data unavailable:', data?.Note || 'Unknown error');
-      res.status(500).json({ 
-        success: false, 
-        error: 'Market data unavailable',
-        message: data?.Note || 'Could not fetch market data'
+      res.json({
+        success: true,
+        analysis: analysis.text,
+        recommendations: analysis.recommendations,
+        marketData: {
+          symbol,
+          currentPrice: latestPrice,
+          timestamp: latestTimestamp
+        }
       });
+    } else {
+      throw new Error(data?.Note || 'Market data unavailable');
     }
-
   } catch (error) {
-    console.error('[MINI-APP] Error fetching market data:', error);
+    console.error('[API] Analysis error:', error.message);
     res.status(500).json({ 
       success: false, 
-      error: 'Market data fetch failed',
-      message: 'Unable to connect to market data provider'
+      error: 'Analysis failed',
+      message: error.message
     });
   }
 });
@@ -138,34 +104,31 @@ app.get('/api/quick-signal', async (req, res) => {
   const symbol = req.query.symbol || 'BTCUSD';
   
   try {
-    // Simplified analysis for quick signals
-    const alphaVantageUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=15min&apikey=${alphaVantageApiKey}&outputsize=compact&datatype=json&market=BINANCE`;
+    const marketDataUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=15min&apikey=${API_KEYS.alphaVantage}&outputsize=compact&datatype=json`;
     
-    const response = await fetch(alphaVantageUrl);
+    const response = await fetch(marketDataUrl);
     const data = await response.json();
     
-    if (data && data['Time Series (15min)']) {
+    if (data['Time Series (15min)']) {
       const timeSeriesData = data['Time Series (15min)'];
-      const latestTimestamp = Object.keys(timeSeriesData)[0];
-      const latestPrice = parseFloat(timeSeriesData[latestTimestamp]['4. close']);
-      
-      // Simple trend analysis
       const prices = Object.values(timeSeriesData).slice(0, 5).map(candle => parseFloat(candle['4. close']));
+      const latestPrice = prices[0];
+      
       const trend = prices[0] > prices[4] ? 'BULLISH' : prices[0] < prices[4] ? 'BEARISH' : 'SIDEWAYS';
       const signal = trend === 'BULLISH' ? 'BUY' : trend === 'BEARISH' ? 'SELL' : 'HOLD';
       
       res.json({
         success: true,
-        signal: signal,
+        signal,
         price: latestPrice.toFixed(2),
         confidence: trend === 'SIDEWAYS' ? '50%' : '75%',
-        trend: trend
+        trend
       });
     } else {
       throw new Error('Market data unavailable');
     }
   } catch (error) {
-    console.error('[MINI-APP] Quick signal error:', error);
+    console.error('[API] Quick signal error:', error.message);
     res.status(500).json({ 
       success: false, 
       error: 'Quick signal failed' 
@@ -184,127 +147,19 @@ app.post('/api/analyze-chart-image', upload.single('chart'), async (req, res) =>
     }
 
     const userId = req.body.userId;
-    console.log(`[MINI-APP] Chart image received from user ${userId}`);
+    console.log(`[API] Chart image received from user ${userId}`);
 
-    // Here you would integrate with your existing Telegram bot
-    // to send the chart image for AI analysis
-    
-    // For now, we'll just acknowledge receipt
     res.json({
       success: true,
-      message: 'Chart image received and sent for analysis',
+      message: 'Chart image received for analysis',
       analysisId: `analysis_${Date.now()}`
     });
 
-    // TODO: Integrate with existing Telegram bot to analyze the image
-    // You can use your existing chart analysis logic from the bot
-
   } catch (error) {
-    console.error('[MINI-APP] Chart analysis error:', error);
+    console.error('[API] Chart analysis error:', error.message);
     res.status(500).json({ 
       success: false, 
       error: 'Chart analysis failed' 
-    });
-  }
-});
-
-// Trading signals endpoint
-app.get('/api/signals', async (req, res) => {
-  try {
-    // Return mock trading signals for now
-    // In production, this would fetch from your database
-    const signals = [
-      {
-        pair: 'BTC/USD',
-        type: 'BUY',
-        entry: '$45,250',
-        takeProfit: '$48,200',
-        stopLoss: '$43,900',
-        riskReward: '1:3.2',
-        time: '2 hours ago',
-        status: 'active'
-      },
-      {
-        pair: 'ETH/USD',
-        type: 'SELL',
-        entry: '$2,850',
-        takeProfit: '$2,650',
-        stopLoss: '$2,950',
-        riskReward: '1:2.8',
-        time: '4 hours ago',
-        status: 'active'
-      }
-    ];
-
-    res.json({
-      success: true,
-      signals: signals
-    });
-  } catch (error) {
-    console.error('[MINI-APP] Signals fetch error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to fetch signals' 
-    });
-  }
-});
-
-// Portfolio endpoint
-app.get('/api/portfolio', async (req, res) => {
-  try {
-    const userId = req.query.userId;
-    
-    // Return mock portfolio data for now
-    // In production, this would fetch user-specific data from your database
-    const portfolio = {
-      balance: '$12,450.00',
-      change: '+2.5% (24h)',
-      changeType: 'positive',
-      positions: [
-        {
-          pair: 'BTC/USD',
-          type: 'LONG',
-          size: '0.25 BTC',
-          entry: '$44,800',
-          current: '$45,250',
-          pnl: '+$112.50',
-          pnlType: 'profit'
-        }
-      ]
-    };
-
-    res.json({
-      success: true,
-      portfolio: portfolio
-    });
-  } catch (error) {
-    console.error('[MINI-APP] Portfolio fetch error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to fetch portfolio' 
-    });
-  }
-});
-
-// Telegram WebApp data validation endpoint
-app.post('/api/validate-telegram-data', (req, res) => {
-  try {
-    const { initData } = req.body;
-    
-    // Validate Telegram Web App init data
-    // This is important for security in production
-    // For now, we'll just acknowledge the data
-    
-    res.json({
-      success: true,
-      valid: true,
-      message: 'Telegram data validated'
-    });
-  } catch (error) {
-    console.error('[MINI-APP] Telegram data validation error:', error);
-    res.status(400).json({ 
-      success: false, 
-      error: 'Invalid Telegram data' 
     });
   }
 });
@@ -319,17 +174,44 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Error handling middleware
-app.use((error, req, res, next) => {
-  console.error('[MINI-APP] Error:', error);
-  res.status(500).json({
-    success: false,
-    error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
-  });
-});
+// Helper Functions
+async function generateAIAnalysis(symbol, currentPrice, timeSeriesData) {
+  try {
+    const prompt = `Analyze ${symbol} trading data. Current price: $${currentPrice}. 
+    Provide: trend (Bullish/Bearish/Sideways), position recommendation (Long/Short/Hold), 
+    entry price, take profit, stop loss, and confidence percentage. Keep response concise.`;
 
-// Helper function to extract trading recommendations from AI response
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEYS.gemini}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generation_config: { max_output_tokens: 300 }
+      })
+    });
+    
+    const data = await response.json();
+    const analysisText = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Analysis unavailable';
+    
+    return {
+      text: analysisText,
+      recommendations: extractTradingRecommendations(analysisText, currentPrice)
+    };
+  } catch (error) {
+    console.error('[AI] Analysis error:', error.message);
+    return {
+      text: 'AI analysis temporarily unavailable',
+      recommendations: {
+        position: 'HOLD',
+        entry: currentPrice.toFixed(2),
+        takeProfit: 'N/A',
+        stopLoss: 'N/A',
+        possibility: '50%'
+      }
+    };
+  }
+}
+
 function extractTradingRecommendations(analysisText, currentPrice) {
   const recommendations = {
     position: 'HOLD',
@@ -350,17 +232,10 @@ function extractTradingRecommendations(analysisText, currentPrice) {
     recommendations.position = 'SHORT';
   }
 
-  // Extract confidence/possibility
+  // Extract confidence
   const confidenceMatch = analysisText.match(/(\d+)%/);
   if (confidenceMatch) {
     recommendations.possibility = confidenceMatch[0];
-  }
-
-  // Extract price levels (simplified)
-  const priceMatches = analysisText.match(/\$?[\d,]+\.?\d*/g);
-  if (priceMatches && priceMatches.length >= 3) {
-    recommendations.takeProfit = priceMatches[1];
-    recommendations.stopLoss = priceMatches[2];
   }
 
   return recommendations;
@@ -368,9 +243,9 @@ function extractTradingRecommendations(analysisText, currentPrice) {
 
 // Start server
 app.listen(port, () => {
-  console.log(`🚀 CryptoSignAI Mini App server running on port ${port}`);
-  console.log(`📱 Mini App URL: http://localhost:${port}`);
-  console.log(`🔗 API Base URL: http://localhost:${port}/api`);
+  console.log(`🚀 CryptoSignAI Mini App running on port ${port}`);
+  console.log(`📱 Access at: http://localhost:${port}`);
+  console.log(`🔑 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 export default app;
