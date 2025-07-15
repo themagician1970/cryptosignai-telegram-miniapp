@@ -1,13 +1,14 @@
 # 🚀 CryptoSignAI Telegram Mini App
 
-A powerful Telegram Mini App for cryptocurrency trading analysis with AI-powered insights.
+Professional Telegram Mini App for Crypto Trading Analysis with AI Integration
 
-## 🎯 Features
+## ✨ Features
 
-- **📊 Real-time Charts** - TradingView integration with live market data
-- **🤖 AI Analysis** - Gemini-powered trading recommendations
-- **🎯 Trading Signals** - Buy/sell recommendations with entry/exit points
-- **💼 Portfolio Tracking** - Monitor your trading performance
+- 📊 **Live TradingView Charts** - Real-time market data and analysis
+- 🤖 **AI Trading Analysis** - Powered by Gemini AI for smart insights
+- ⚡ **Quick Signals** - Fast trading recommendations
+- 📱 **Mobile Optimized** - Perfect for Telegram mobile app
+- 🎨 **Modern UI** - Beautiful interface with Telegram theming
 - **📱 Mobile Optimized** - Responsive design for all devices
 - **🔒 Telegram Integration** - Seamless authentication and UX
 
