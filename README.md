@@ -1,14 +1,15 @@
-# 🚀 CryptoSignAI Telegram Mini App
+# 🚀 CryptoSignAI - Professional Telegram Mini App
 
-Professional Telegram Mini App for Crypto Trading Analysis with AI Integration
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/themagician1970/cryptosignai-telegram-miniapp)
 
-## ✨ Features
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)
+![Platform](https://img.shields.io/badge/platform-Telegram-blue.svg)
 
-- 📊 **Live TradingView Charts** - Real-time market data and analysis
-- 🤖 **AI Trading Analysis** - Powered by Gemini AI for smart insights
-- ⚡ **Quick Signals** - Fast trading recommendations
-- 📱 **Mobile Optimized** - Perfect for Telegram mobile app
-- 🎨 **Modern UI** - Beautiful interface with Telegram theming
+## 🎯 **Live Demo**
+🔗 **App URL:** https://cryptosignai-miniapp.onrender.com  
+🤖 **Bot:** @CryptoSignAI_Bot  
+📱 **Try it:** Send `/start` to the bot
 - **📱 Mobile Optimized** - Responsive design for all devices
 - **🔒 Telegram Integration** - Seamless authentication and UX
 
