@@ -17,17 +17,45 @@ jobs:
         with:
           node-version: '18'
           
+      - name: List repository contents
+        run: |
+          echo "Repository structure:"
+          ls -la
+          echo "Current directory: $(pwd)"
+          
       - name: Install dependencies
         run: |
-          cd ../
           if [ -f package.json ] && [ -s package.json ]; then
+            echo "✅ Found package.json in repository root"
             npm install
           else
-            echo "No valid package.json found, skipping npm install"
+            echo "❌ No valid package.json found"
+            exit 1
+          fi
+          
+      - name: Test application
+        run: |
+          echo "✅ Testing application structure"
+          if [ -f "server.js" ]; then
+            echo "✅ Server file found"
+          else
+            echo "❌ Server file not found"
+            exit 1
+          fi
+          
+          if [ -f "index.html" ]; then
+            echo "✅ Frontend file found"
+          else
+            echo "❌ Frontend file not found"
+            exit 1
           fi
         
       - name: Deploy to Render
         run: |
-          echo "✅ Deployment prepared successfully"
+          echo "✅ Application validated successfully"
           echo "🚀 Render will auto-deploy from main branch"
-          echo "📍 Application will be available at your Render URL"
+          echo "📍 Application available at: https://cryptosignai-miniapp.onrender.com"
+          echo "🔧 Make sure your Render service is configured to:"
+          echo "   - Build Command: npm install"
+          echo "   - Start Command: npm start"
+          echo "   - Node Version: 18"
