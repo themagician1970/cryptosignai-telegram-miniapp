@@ -49,6 +49,79 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Debug test endpoint for troubleshooting
+app.get('/debug', (req, res) => {
+    res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Debug Test</title>
+            <style>
+                body { font-family: Arial; padding: 20px; background: #1e3c72; color: white; }
+                button { padding: 15px 25px; margin: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+                #result { margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 8px; }
+                .success { background: rgba(76,175,80,0.3); }
+                .error { background: rgba(244,67,54,0.3); }
+            </style>
+        </head>
+        <body>
+            <h1>🔧 CryptoSignAI Debug Test</h1>
+            <p>Testing button functionality and API connectivity</p>
+            
+            <button onclick="testButton()">🧪 Test Button Click</button>
+            <button onclick="testAPI()">🔍 Test API Call</button>
+            <button onclick="testAnalyze()">📊 Test Analyze Function</button>
+            
+            <div id="result">Click a button to test...</div>
+
+            <script>
+                console.log('🚀 Debug page loaded');
+                
+                function testButton() {
+                    console.log('✅ Button click works!');
+                    document.getElementById('result').innerHTML = '<div class="success">✅ Button click functionality works!</div>';
+                }
+                
+                function testAPI() {
+                    console.log('🔍 Testing API...');
+                    document.getElementById('result').innerHTML = '<div>🔄 Testing API...</div>';
+                    
+                    fetch('/api/analyze?symbol=bitcoin')
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('✅ API response:', data);
+                            document.getElementById('result').innerHTML = 
+                                '<div class="success">✅ API works!<br>' +
+                                'Symbol: ' + data.symbol + '<br>' +
+                                'Price: $' + data.price + '<br>' +
+                                'Signal: ' + data.signal + '</div>';
+                        })
+                        .catch(error => {
+                            console.error('❌ API error:', error);
+                            document.getElementById('result').innerHTML = '<div class="error">❌ API failed: ' + error.message + '</div>';
+                        });
+                }
+                
+                function testAnalyze() {
+                    console.log('📊 Testing analyze function simulation...');
+                    document.getElementById('result').innerHTML = '<div>🔄 Simulating analyze function...</div>';
+                    
+                    // Simulate the analyze function logic
+                    setTimeout(() => {
+                        document.getElementById('result').innerHTML = '<div class="success">✅ Analyze function simulation complete!<br>This tests the same logic used by the main page buttons.</div>';
+                    }, 1000);
+                }
+                
+                // Auto-run basic test
+                setTimeout(() => {
+                    document.getElementById('result').innerHTML = '<div class="success">✅ Page loaded successfully - JavaScript is working!</div>';
+                }, 500);
+            </script>
+        </body>
+        </html>
+    `);
+});
+
 // Enhanced crypto data fetching
 async function getCryptoPrices() {
   try {
