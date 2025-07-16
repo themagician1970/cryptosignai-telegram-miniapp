@@ -264,12 +264,12 @@
                 <div class="card">
                     <h3>AI Analysis</h3>
                     <select id="analysis-symbol" style="width: 100%; padding: 10px; border-radius: 5px; margin-bottom: 15px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                        <option value="US100" selected>NASDAQ 100 (US100)</option>
                         <option value="bitcoin">Bitcoin (BTC)</option>
                         <option value="ethereum">Ethereum (ETH)</option>
                         <option value="binancecoin">BNB</option>
                         <option value="cardano">Cardano (ADA)</option>
                         <option value="solana">Solana (SOL)</option>
-                        <option value="US100">NASDAQ 100 (US100)</option>
                     </select>
                     <button class="btn" id="analyze-btn">🔍 Analyze</button>
                     
@@ -308,12 +308,12 @@
                 <div class="card">
                     <h3>Trading Charts</h3>
                     <select id="chart-symbol" style="width: 100%; padding: 10px; border-radius: 5px; margin-bottom: 15px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                        <option value="NAS100" selected>NASDAQ 100</option>
                         <option value="BTCUSD">Bitcoin (BTC/USD)</option>
                         <option value="ETHUSD">Ethereum (ETH/USD)</option>
                         <option value="BNBUSD">BNB (BNB/USD)</option>
                         <option value="ADAUSD">Cardano (ADA/USD)</option>
                         <option value="SOLUSD">Solana (SOL/USD)</option>
-                        <option value="NAS100">NASDAQ 100</option>
                         <option value="SPX500">S&P 500</option>
                         <option value="EURUSD">EUR/USD</option>
                         <option value="XAUUSD">Gold (XAU/USD)</option>
@@ -768,7 +768,7 @@
             const symbolElement = document.getElementById('analysis-symbol');
             console.log('🔍 Symbol element:', symbolElement);
             
-            const symbol = symbolElement ? symbolElement.value : 'bitcoin';
+            const symbol = symbolElement ? symbolElement.value : 'US100';
             console.log('🔍 Selected symbol:', symbol);
             
             updateDisplay('analysis-result', '<div class="loading"></div> 🔄 Analyzing...');
