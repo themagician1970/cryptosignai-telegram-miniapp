@@ -32,29 +32,45 @@ app.get('/health', (req, res) => {
 // Simple market data from CoinGecko (free, no API key needed)
 app.get('/api/market-overview', async (req, res) => {
   try {
-    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,cardano,solana&vs_currencies=usd&include_24hr_change=true');
-    const data = await response.json();
+    // Get crypto data
+    const cryptoResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,cardano&vs_currencies=usd&include_24hr_change=true');
+    const cryptoData = await cryptoResponse.json();
+    
+    // Get US100 (NASDAQ 100) data from Alpha Vantage
+    const us100Response = await fetch('https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=QQQ&apikey=JHAUBJXIG3L5PDHE');
+    const us100Data = await us100Response.json();
+    
+    let us100Price = 0;
+    let us100Change = 0;
+    
+    if (us100Data['Global Quote']) {
+      const quote = us100Data['Global Quote'];
+      us100Price = parseFloat(quote['05. price']);
+      us100Change = parseFloat(quote['09. change']);
+      // Convert to percentage
+      us100Change = (us100Change / (us100Price - us100Change)) * 100;
+    }
     
     const formatted = {
       'BTC/USD': {
-        price: data.bitcoin.usd,
-        change: data.bitcoin.usd_24h_change
+        price: cryptoData.bitcoin.usd,
+        change: cryptoData.bitcoin.usd_24h_change
       },
       'ETH/USD': {
-        price: data.ethereum.usd,
-        change: data.ethereum.usd_24h_change
+        price: cryptoData.ethereum.usd,
+        change: cryptoData.ethereum.usd_24h_change
       },
       'BNB/USD': {
-        price: data.binancecoin.usd,
-        change: data.binancecoin.usd_24h_change
+        price: cryptoData.binancecoin.usd,
+        change: cryptoData.binancecoin.usd_24h_change
       },
       'ADA/USD': {
-        price: data.cardano.usd,
-        change: data.cardano.usd_24h_change
+        price: cryptoData.cardano.usd,
+        change: cryptoData.cardano.usd_24h_change
       },
-      'SOL/USD': {
-        price: data.solana.usd,
-        change: data.solana.usd_24h_change
+      'US100': {
+        price: us100Price,
+        change: us100Change
       }
     };
     
@@ -69,56 +85,78 @@ app.get('/api/analyze', async (req, res) => {
   const symbol = req.query.symbol || 'bitcoin';
   
   try {
-    // Get price data from CoinGecko (more reliable, no rate limits)
-    const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${symbol}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`);
-    const data = await response.json();
+    let coinData;
+    let price;
+    let change;
+    let displayName;
     
-    const coinData = data[symbol] || data['bitcoin']; // Fallback to bitcoin if symbol not found
-    if (coinData) {
-      const price = coinData.usd;
-      const change = coinData.usd_24h_change;
+    if (symbol === 'US100' || symbol === 'us100') {
+      // Handle US100 separately
+      const response = await fetch('https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=QQQ&apikey=JHAUBJXIG3L5PDHE');
+      const data = await response.json();
       
-      // Generate simple AI-like analysis based on market data
-      let analysis = `${symbol.charAt(0).toUpperCase() + symbol.slice(1)} analysis: Current price $${price.toFixed(2)} USD. `;
-      let position = "Hold";
-      let confidence = "60%";
-      
-      if (change > 5) {
-        analysis += "Strong bullish momentum with +5% daily gain. Market sentiment is very positive.";
-        position = "Long";
-        confidence = "85%";
-      } else if (change > 2) {
-        analysis += "Positive momentum with moderate gains. Upward trend confirmed.";
-        position = "Long"; 
-        confidence = "75%";
-      } else if (change < -5) {
-        analysis += "Strong bearish pressure with -5% daily loss. High selling pressure detected.";
-        position = "Short";
-        confidence = "85%";
-      } else if (change < -2) {
-        analysis += "Negative momentum with declining prices. Bearish sentiment emerging.";
-        position = "Short";
-        confidence = "75%";
+      if (data['Global Quote']) {
+        const quote = data['Global Quote'];
+        price = parseFloat(quote['05. price']);
+        const priceChange = parseFloat(quote['09. change']);
+        change = (priceChange / (price - priceChange)) * 100;
+        displayName = 'NASDAQ 100 (US100)';
       } else {
-        analysis += "Sideways movement with low volatility. Market consolidation phase.";
-        position = "Hold";
-        confidence = "60%";
+        throw new Error('US100 data not available');
       }
-      
-      const recommendations = {
-        position: position,
-        entry: price.toFixed(2),
-        possibility: confidence
-      };
-      
-      res.json({ 
-        analysis: analysis, 
-        recommendations: recommendations,
-        price: price
-      });
     } else {
-      res.status(500).json({ error: 'No market data available for ' + symbol });
+      // Handle crypto currencies
+      const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${symbol}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`);
+      const data = await response.json();
+      
+      coinData = data[symbol] || data['bitcoin']; // Fallback to bitcoin if symbol not found
+      if (coinData) {
+        price = coinData.usd;
+        change = coinData.usd_24h_change;
+        displayName = symbol.charAt(0).toUpperCase() + symbol.slice(1);
+      } else {
+        throw new Error('Market data not available');
+      }
     }
+    
+    // Generate simple AI-like analysis based on market data
+    let analysis = `${displayName} analysis: Current price $${price.toFixed(2)} USD. `;
+    let position = "Hold";
+    let confidence = "60%";
+    
+    if (change > 5) {
+      analysis += "Strong bullish momentum with +5% daily gain. Market sentiment is very positive.";
+      position = "Long";
+      confidence = "85%";
+    } else if (change > 2) {
+      analysis += "Positive momentum with moderate gains. Upward trend confirmed.";
+      position = "Long"; 
+      confidence = "75%";
+    } else if (change < -5) {
+      analysis += "Strong bearish pressure with -5% daily loss. High selling pressure detected.";
+      position = "Short";
+      confidence = "85%";
+    } else if (change < -2) {
+      analysis += "Negative momentum with declining prices. Bearish sentiment emerging.";
+      position = "Short";
+      confidence = "75%";
+    } else {
+      analysis += "Sideways movement with low volatility. Market consolidation phase.";
+      position = "Hold";
+      confidence = "60%";
+    }
+    
+    const recommendations = {
+      position: position,
+      entry: price.toFixed(2),
+      possibility: confidence
+    };
+    
+    res.json({ 
+      analysis: analysis, 
+      recommendations: recommendations,
+      price: price
+    });
   } catch (error) {
     console.error('Analysis error:', error);
     res.status(500).json({ error: 'Analysis failed: ' + error.message });
@@ -130,12 +168,32 @@ app.get('/api/quick-signal/:symbol', async (req, res) => {
   const { symbol } = req.params;
   
   try {
-    // Simple signal based on price movement
-    const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${getCoingeckoId(symbol)}&vs_currencies=usd&include_24hr_change=true`);
-    const data = await response.json();
+    let coinData;
+    let change;
+    let price;
     
-    const coinData = Object.values(data)[0];
-    const change = coinData.usd_24h_change;
+    if (symbol === 'US100') {
+      // Handle US100 separately using Alpha Vantage
+      const response = await fetch('https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=QQQ&apikey=JHAUBJXIG3L5PDHE');
+      const data = await response.json();
+      
+      if (data['Global Quote']) {
+        const quote = data['Global Quote'];
+        price = parseFloat(quote['05. price']);
+        const priceChange = parseFloat(quote['09. change']);
+        change = (priceChange / (price - priceChange)) * 100;
+      } else {
+        throw new Error('US100 data not available');
+      }
+    } else {
+      // Handle crypto currencies using CoinGecko
+      const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${getCoingeckoId(symbol)}&vs_currencies=usd&include_24hr_change=true`);
+      const data = await response.json();
+      
+      coinData = Object.values(data)[0];
+      change = coinData.usd_24h_change;
+      price = coinData.usd;
+    }
     
     let recommendation = 'Hold';
     let confidence = '60%';
@@ -159,7 +217,7 @@ app.get('/api/quick-signal/:symbol', async (req, res) => {
       recommendation,
       confidence,
       change: change.toFixed(2) + '%',
-      price: coinData.usd,
+      price: price,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -167,14 +225,14 @@ app.get('/api/quick-signal/:symbol', async (req, res) => {
   }
 });
 
-// Helper function to map symbols to CoinGecko IDs
+// Helper function to map symbols to CoinGecko IDs or handle special cases
 function getCoingeckoId(symbol) {
   const mapping = {
     'BTC/USDT': 'bitcoin',
     'ETH/USDT': 'ethereum',
     'BNB/USDT': 'binancecoin',
     'ADA/USDT': 'cardano',
-    'SOL/USDT': 'solana'
+    'US100': 'US100' // Special case for US100
   };
   return mapping[symbol] || 'bitcoin';
 }
