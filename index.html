@@ -318,8 +318,8 @@
                         <option value="EURUSD">EUR/USD</option>
                         <option value="XAUUSD">Gold (XAU/USD)</option>
                     </select>
-                    <div style="height: 300px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; margin: 15px 0; display: flex; align-items: center; justify-content: center;">
-                        📈 Chart will be displayed here
+                    <div id="tradingview-chart" style="height: 300px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; margin: 15px 0; display: flex; align-items: center; justify-content: center;">
+                        <!-- TradingView Widget will be injected here -->
                     </div>
                 </div>
                 
@@ -416,6 +416,37 @@
     </div>
 
     <script>
+        // Embed TradingView widget for NASDAQ 100 (US100) and update on symbol change
+        function getTradingViewSymbol(val) {
+            // Map dropdown value to TradingView symbol
+            switch(val) {
+                case 'NAS100': return 'OANDA:NAS100USD';
+                case 'BTCUSD': return 'BINANCE:BTCUSDT';
+                case 'ETHUSD': return 'BINANCE:ETHUSDT';
+                case 'BNBUSD': return 'BINANCE:BNBUSDT';
+                case 'ADAUSD': return 'BINANCE:ADAUSDT';
+                case 'SOLUSD': return 'BINANCE:SOLUSDT';
+                case 'SPX500': return 'OANDA:SPX500USD';
+                case 'EURUSD': return 'OANDA:EURUSD';
+                case 'XAUUSD': return 'OANDA:XAUUSD';
+                default: return 'OANDA:NAS100USD';
+            }
+        }
+
+        function loadTradingViewChart() {
+            const symbol = document.getElementById('chart-symbol').value;
+            const tvSymbol = getTradingViewSymbol(symbol);
+            const chartDiv = document.getElementById('tradingview-chart');
+            chartDiv.innerHTML = `<iframe src="https://s.tradingview.com/widgetembed/?symbol=${tvSymbol}&interval=60&theme=dark&style=1&locale=en&utm_source=cryptosignai&hide_top_toolbar=1&hide_legend=1&saveimage=0&toolbarbg=rgba(255,255,255,0.1)" style="width:100%;height:100%;border:none;"></iframe>`;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const chartSymbol = document.getElementById('chart-symbol');
+            if (chartSymbol) {
+                chartSymbol.addEventListener('change', loadTradingViewChart);
+                loadTradingViewChart(); // Load default chart on page load
+            }
+        });
         console.log('🚀 CryptoSignAI Loading...');
         
         // =================
