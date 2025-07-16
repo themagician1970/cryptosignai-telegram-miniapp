@@ -4,6 +4,8 @@ import cors from 'cors';
 import fetch from 'node-fetch';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -42,6 +44,49 @@ app.use(express.static(__dirname));
 // Serve main page
 app.get('/', (req, res) => {
   res.sendFile(join(__dirname, 'index.html'));
+});
+
+// --- USER AUTHENTICATION SETUP ---
+let db;
+async function initUserDB() {
+  db = await open({
+    filename: __dirname + '/users.db',
+    driver: sqlite3.Database
+  });
+  await db.run(`CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`);
+}
+initUserDB();
+
+// Register endpoint
+app.post('/api/register', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ success: false, error: 'Email and password required' });
+  try {
+    const exists = await db.get('SELECT * FROM users WHERE email = ?', email);
+    if (exists) return res.status(409).json({ success: false, error: 'Email already registered' });
+    await db.run('INSERT INTO users (email, password) VALUES (?, ?)', email, password);
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'Registration failed' });
+  }
+});
+
+// Login endpoint
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ success: false, error: 'Email and password required' });
+  try {
+    const user = await db.get('SELECT * FROM users WHERE email = ? AND password = ?', email, password);
+    if (!user) return res.status(401).json({ success: false, error: 'Invalid credentials' });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'Login failed' });
+  }
 });
 
 // Health check

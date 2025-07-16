@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoSignAI Test Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #1e3c72; color: #fff; margin: 0; padding: 30px; }
+        h1 { color: #FFD700; }
+        .btn { background: #4CAF50; color: white; border: none; padding: 15px 30px; margin: 10px 0; border-radius: 8px; font-size: 16px; cursor: pointer; display: block; width: 250px; }
+        .btn:active { background: #45a049; }
+        #result { margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.08); border-radius: 10px; min-height: 80px; font-size: 16px; }
+        .loading { color: #FFD700; }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <h1>🧪 CryptoSignAI Test & Debug</h1>
+    <button class="btn" onclick="testButton()">Test Button Click</button>
+    <button class="btn" onclick="testAPI()">Test /api/analyze (BTC)</button>
+    <button class="btn" onclick="testQuickSignals()">Test /api/quick-signals</button>
+    <button class="btn" onclick="testHealth()">Test /health Endpoint</button>
+    <div id="result">Ready for testing...</div>
+    <script>
+        function setResult(html, cls) {
+            document.getElementById('result').innerHTML = `<span class="${cls||''}">${html}</span>`;
+        }
+        function testButton() {
+            setResult('✅ Button click works!', 'success');
+        }
+        async function testAPI() {
+            setResult('🔄 Testing /api/analyze... <span class="loading">(waiting)</span>');
+            try {
+                const res = await fetch('/api/analyze?symbol=bitcoin');
+                const data = await res.json();
+                setResult(`<b>✅ /api/analyze works!</b><br>Symbol: ${data.symbol}<br>Price: $${data.price}<br>Signal: ${data.signal}<br>Confidence: ${data.confidence || '-'}%`, 'success');
+            } catch (e) {
+                setResult('❌ /api/analyze failed: ' + e.message, 'error');
+            }
+        }
+        async function testQuickSignals() {
+            setResult('🔄 Testing /api/quick-signals... <span class="loading">(waiting)</span>');
+            try {
+                const res = await fetch('/api/quick-signals');
+                const data = await res.json();
+                if (data.success) {
+                    setResult(`<b>✅ /api/quick-signals works!</b><br>Total: ${data.totalSignals}<br>Signals:<br>` + data.signals.map(s => `${s.symbol}: ${s.signal} (${s.confidence}%)`).join('<br>'), 'success');
+                } else {
+                    setResult('❌ /api/quick-signals error: ' + (data.error || 'Unknown'), 'error');
+                }
+            } catch (e) {
+                setResult('❌ /api/quick-signals failed: ' + e.message, 'error');
+            }
+        }
+        async function testHealth() {
+            setResult('🔄 Testing /health... <span class="loading">(waiting)</span>');
+            try {
+                const res = await fetch('/health');
+                const data = await res.json();
+                if (data.status === 'OK') {
+                    setResult(`<b>✅ /health OK</b><br>Time: ${data.timestamp}`, 'success');
+                } else {
+                    setResult('❌ /health returned unexpected result', 'error');
+                }
+            } catch (e) {
+                setResult('❌ /health failed: ' + e.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

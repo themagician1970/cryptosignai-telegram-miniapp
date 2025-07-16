@@ -1,3 +1,63 @@
+    <div class="container" style="max-width:400px;margin:40px auto 0 auto;">
+        <div class="card" id="auth-panel">
+            <h2 style="color:#FFD700;text-align:center;">Sign In / Register</h2>
+            <input id="auth-email" type="email" placeholder="Email" style="width:100%;padding:10px;margin:10px 0;border-radius:5px;border:1px solid #ccc;">
+            <input id="auth-password" type="password" placeholder="Password" style="width:100%;padding:10px;margin:10px 0;border-radius:5px;border:1px solid #ccc;">
+            <button class="btn" onclick="registerUser()">Register</button>
+            <button class="btn" onclick="loginUser()" style="background:#45B7D1;">Sign In</button>
+            <div id="auth-result" style="margin-top:10px;min-height:24px;"></div>
+        </div>
+    </div>
+    <script>
+    async function registerUser() {
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value;
+        const result = document.getElementById('auth-result');
+        result.textContent = 'Registering...';
+        try {
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (data.success) {
+                result.textContent = '✅ Registered! You can now sign in.';
+                result.style.color = '#4CAF50';
+            } else {
+                result.textContent = '❌ ' + (data.error || 'Registration failed');
+                result.style.color = '#f44336';
+            }
+        } catch (e) {
+            result.textContent = '❌ Registration error';
+            result.style.color = '#f44336';
+        }
+    }
+    async function loginUser() {
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value;
+        const result = document.getElementById('auth-result');
+        result.textContent = 'Signing in...';
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (data.success) {
+                result.textContent = '✅ Signed in! (future: show user panel)';
+                result.style.color = '#4CAF50';
+            } else {
+                result.textContent = '❌ ' + (data.error || 'Login failed');
+                result.style.color = '#f44336';
+            }
+        } catch (e) {
+            result.textContent = '❌ Login error';
+            result.style.color = '#f44336';
+        }
+    }
+    </script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
