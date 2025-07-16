@@ -1,23 +1,40 @@
 {
   "type": "module",
-  "name": "website",
-  "version": "1.0.0",
-  "description": "",
+  "name": "cryptosignai-advanced",
+  "version": "2.0.0",
+  "description": "Advanced AI-powered multi-asset trading platform with Telegram integration",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "bot": "node telegram-bot-enhanced.js",
+    "test": "echo \"No tests specified\" && exit 0"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "crypto",
+    "trading",
+    "ai",
+    "signals",
+    "telegram",
+    "forex",
+    "commodities",
+    "portfolio",
+    "realtime"
+  ],
+  "author": "CryptoSignAI",
+  "license": "MIT",
   "dependencies": {
-    "cors": "^2.8.5",
     "express": "^4.19.2",
-    "node-fetch": "^3.3.2"
-  },
-  "optionalDependencies": {
+    "cors": "^2.8.5",
+    "node-fetch": "^3.3.2",
     "node-telegram-bot-api": "^0.65.1"
-  }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/themagician1970/cryptosignai-telegram-miniapp.git"
+  },
+  "homepage": "https://cryptosignai-miniapp.onrender.com"
 }

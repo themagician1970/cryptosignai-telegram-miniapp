@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoSignAI - Trading Platform</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff; min-height: 100vh; padding: 15px;
+        }
+        .header { text-align: center; padding: 20px 0; margin-bottom: 20px; }
+        .header h1 {
+            font-size: 2.2em; background: linear-gradient(45deg, #FFD700, #FFA500);
+            background-clip: text; -webkit-background-clip: text; 
+            color: transparent; -webkit-text-fill-color: transparent; margin-bottom: 10px;
+        }
+        .card {
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(15px);
+            border-radius: 20px; padding: 20px; margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .card h3 { margin-bottom: 15px; color: #FFD700; font-size: 1.3em; }
+        .price-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        .price-item { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; text-align: center; }
+        .symbol { font-weight: bold; margin-bottom: 5px; color: #FFD700; }
+        .price { font-size: 1.2em; margin-bottom: 5px; }
+        .change { font-size: 0.9em; padding: 3px 8px; border-radius: 15px; }
+        .positive { background: #4CAF50; }
+        .negative { background: #f44336; }
+        .button {
+            background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none;
+            padding: 15px 25px; border-radius: 25px; cursor: pointer; font-weight: 600;
+            font-size: 1em; transition: all 0.3s ease; width: 100%; margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        .signal-card {
+            background: linear-gradient(45deg, #4CAF50, #45a049); border-radius: 15px;
+            padding: 20px; margin-top: 15px; color: white;
+        }
+        .signal-card.sell { background: linear-gradient(45deg, #f44336, #d32f2f); }
+        .signal-card.hold { background: linear-gradient(45deg, #FF9800, #F57C00); }
+        .chart-container { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; margin-bottom: 20px; height: 400px; }
+        .loading { text-align: center; padding: 20px; opacity: 0.7; }
+        .select {
+            width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px; background: rgba(255,255,255,0.1); color: #fff;
+            font-size: 1em; margin-bottom: 15px;
+        }
+        .select option { background: #333; color: #fff; }
+        @media (max-width: 768px) { .price-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 CryptoSignAI</h1>
+        <p>AI-Powered Trading Platform</p>
+    </div>
+
+    <div class="card">
+        <h3>📈 Market Overview</h3>
+        <div id="marketOverview" class="price-grid">
+            <div class="loading">Loading market data...</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>⚡ Quick Signal</h3>
+        <select id="quickSymbol" class="select">
+            <option value="BTC/USDT">Bitcoin (BTC/USDT)</option>
+            <option value="ETH/USDT">Ethereum (ETH/USDT)</option>
+            <option value="BNB/USDT">Binance Coin (BNB/USDT)</option>
+            <option value="ADA/USDT">Cardano (ADA/USDT)</option>
+            <option value="US100">NASDAQ 100 (US100)</option>
+        </select>
+        <button class="button" onclick="getQuickSignal()">🎯 Get Quick Signal</button>
+        <button class="button" onclick="getAIAnalysis()">🤖 Get AI Analysis</button>
+        <div id="signalResult"></div>
+    </div>
+
+    <div class="card">
+        <h3>📊 Live Chart</h3>
+        <div id="tradingview_chart" class="chart-container"></div>
+    </div>
+
+    <script>
+        const tg = window.Telegram?.WebApp;
+        if (tg) { tg.ready(); tg.expand(); }
+
+        async function loadMarketOverview() {
+            try {
+                const response = await fetch('/api/market-overview');
+                const data = await response.json();
+                const container = document.getElementById('marketOverview');
+                container.innerHTML = '';
+                Object.entries(data).forEach(([symbol, info]) => {
+                    const changeClass = info.change >= 0 ? 'positive' : 'negative';
+                    const changeSign = info.change >= 0 ? '+' : '';
+                    container.innerHTML += `
+                        <div class="price-item">
+                            <div class="symbol">${symbol}</div>
+                            <div class="price">$${parseFloat(info.price).toFixed(2)}</div>
+                            <div class="change ${changeClass}">${changeSign}${parseFloat(info.change).toFixed(2)}%</div>
+                        </div>`;
+                });
+            } catch (error) { console.error('Error loading market overview:', error); }
+        }
+
+        async function getQuickSignal() {
+            const symbol = document.getElementById('quickSymbol').value;
+            const container = document.getElementById('signalResult');
+            container.innerHTML = '<div class="loading">Generating signal...</div>';
+            try {
+                const encodedSymbol = encodeURIComponent(symbol);
+                const response = await fetch(`/api/quick-signal/${encodedSymbol}`);
+                const data = await response.json();
+                const signalClass = data.recommendation.toLowerCase().includes('buy') ? '' : 
+                                  data.recommendation.toLowerCase().includes('sell') ? ' sell' : ' hold';
+                container.innerHTML = `
+                    <div class="signal-card${signalClass}">
+                        <h4>${data.symbol} - ${data.recommendation}</h4>
+                        <p><strong>Confidence:</strong> ${data.confidence}</p>
+                        <p><strong>Price:</strong> $${parseFloat(data.price).toFixed(2)}</p>
+                        <p><strong>24h Change:</strong> ${data.change}</p>
+                        <small>Generated: ${new Date(data.timestamp).toLocaleTimeString()}</small>
+                    </div>`;
+            } catch (error) {
+                container.innerHTML = '<div class="card">Error generating signal. Please try again.</div>';
+            }
+        }
+
+        async function getAIAnalysis() {
+            const container = document.getElementById('signalResult');
+            container.innerHTML = '<div class="loading">AI is analyzing the market...</div>';
+            try {
+                const response = await fetch('/api/analyze');
+                const data = await response.json();
+                const signalClass = data.recommendations.position === 'Long' ? '' : 
+                                  data.recommendations.position === 'Short' ? ' sell' : ' hold';
+                container.innerHTML = `
+                    <div class="signal-card${signalClass}">
+                        <h4>🤖 AI Analysis</h4>
+                        <p><strong>Analysis:</strong> ${data.analysis}</p>
+                        <div style="margin-top: 15px;">
+                            <p><strong>Position:</strong> ${data.recommendations.position}</p>
+                            <p><strong>Entry Price:</strong> $${data.recommendations.entry}</p>
+                            <p><strong>Confidence:</strong> ${data.recommendations.possibility}</p>
+                        </div>
+                    </div>`;
+            } catch (error) {
+                container.innerHTML = '<div class="card">Error getting AI analysis. Please try again.</div>';
+            }
+        }
+
+        function initTradingViewChart() {
+            try {
+                if (typeof TradingView !== 'undefined') {
+                    new TradingView.widget({
+                        "width": '100%', "height": 360, "symbol": "BINANCE:BTCUSDT", "interval": "1H",
+                        "timezone": "Etc/UTC", "theme": "dark", "style": "1", "locale": "en",
+                        "toolbar_bg": "#f1f3f6", "enable_publishing": false, "hide_top_toolbar": false,
+                        "hide_legend": true, "save_image": false, "container_id": "tradingview_chart"
+                    });
+                } else {
+                    document.getElementById('tradingview_chart').innerHTML = 
+                        '<div class="loading">Chart loading... Please wait or refresh the page.</div>';
+                }
+            } catch (error) {
+                console.error('TradingView chart error:', error);
+                document.getElementById('tradingview_chart').innerHTML = 
+                    '<div class="loading">Chart unavailable. Please refresh the page.</div>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMarketOverview(); initTradingViewChart();
+        });
+        setInterval(loadMarketOverview, 30000);
+    </script>
+</body>
+</html>

@@ -3,184 +3,800 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CryptoSignAI - Trading Platform</title>
+    <title>CryptoSignAI - Advanced Trading Platform</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff; min-height: 100vh; padding: 15px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 10px;
         }
-        .header { text-align: center; padding: 20px 0; margin-bottom: 20px; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
         .header h1 {
-            font-size: 2.2em; background: linear-gradient(45deg, #FFD700, #FFA500);
-            background-clip: text; -webkit-background-clip: text; 
-            color: transparent; -webkit-text-fill-color: transparent; margin-bottom: 10px;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .grid {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
         .card {
-            background: rgba(255,255,255,0.1); backdrop-filter: blur(15px);
-            border-radius: 20px; padding: 20px; margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .card h3 { margin-bottom: 15px; color: #FFD700; font-size: 1.3em; }
-        .price-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
-        .price-item { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; text-align: center; }
-        .symbol { font-weight: bold; margin-bottom: 5px; color: #FFD700; }
-        .price { font-size: 1.2em; margin-bottom: 5px; }
-        .change { font-size: 0.9em; padding: 3px 8px; border-radius: 15px; }
-        .positive { background: #4CAF50; }
-        .negative { background: #f44336; }
-        .button {
-            background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none;
-            padding: 15px 25px; border-radius: 25px; cursor: pointer; font-weight: 600;
-            font-size: 1em; transition: all 0.3s ease; width: 100%; margin-bottom: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+
+        .card h3 {
+            margin-bottom: 15px;
+            color: #FFD700;
+            font-size: 1.2rem;
         }
-        .button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+
+        .market-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .market-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .market-info {
+            flex: 1;
+        }
+
+        .market-symbol {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 3px;
+        }
+
+        .market-name {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .market-price {
+            text-align: right;
+        }
+
+        .price {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .change {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .positive {
+            color: #4CAF50;
+        }
+
+        .negative {
+            color: #f44336;
+        }
+
+        .neutral {
+            color: #FFA500;
+        }
+
         .signal-card {
-            background: linear-gradient(45deg, #4CAF50, #45a049); border-radius: 15px;
-            padding: 20px; margin-top: 15px; color: white;
+            text-align: center;
+            padding: 20px;
         }
-        .signal-card.sell { background: linear-gradient(45deg, #f44336, #d32f2f); }
-        .signal-card.hold { background: linear-gradient(45deg, #FF9800, #F57C00); }
-        .chart-container { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; margin-bottom: 20px; height: 400px; }
-        .loading { text-align: center; padding: 20px; opacity: 0.7; }
-        .select {
-            width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 10px; background: rgba(255,255,255,0.1); color: #fff;
-            font-size: 1em; margin-bottom: 15px;
+
+        .signal-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1rem;
+            margin: 10px 0;
         }
-        .select option { background: #333; color: #fff; }
-        @media (max-width: 768px) { .price-grid { grid-template-columns: 1fr; } }
+
+        .signal-buy {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .signal-sell {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .signal-hold {
+            background: linear-gradient(45deg, #FFA500, #FF8C00);
+            color: white;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #FFD700);
+            transition: width 0.5s ease;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .portfolio-summary {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .portfolio-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .portfolio-change {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .news-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .news-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .news-summary {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .news-time {
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid #FFA500;
+            background: rgba(255, 165, 0, 0.1);
+        }
+
+        .chart-container {
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-live {
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .category-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: transparent;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border-color: #4CAF50;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tab {
+                font-size: 12px;
+                padding: 12px 8px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🚀 CryptoSignAI</h1>
-        <p>AI-Powered Trading Platform</p>
-    </div>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 CryptoSignAI</h1>
+            <p><span class="status-indicator status-live"></span>Advanced AI Trading Platform</p>
+        </div>
 
-    <div class="card">
-        <h3>📈 Market Overview</h3>
-        <div id="marketOverview" class="price-grid">
-            <div class="loading">Loading market data...</div>
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('markets')">📊 Markets</button>
+            <button class="nav-tab" onclick="showTab('signals')">⚡ Signals</button>
+            <button class="nav-tab" onclick="showTab('portfolio')">💼 Portfolio</button>
+            <button class="nav-tab" onclick="showTab('news')">📰 News</button>
+            <button class="nav-tab" onclick="showTab('charts')">📈 Charts</button>
+        </div>
+
+        <!-- Markets Tab -->
+        <div id="markets" class="tab-content active">
+            <div class="card">
+                <h3>Multi-Asset Markets</h3>
+                <div class="category-filter">
+                    <button class="filter-btn active" onclick="filterMarkets('all')">All</button>
+                    <button class="filter-btn" onclick="filterMarkets('crypto')">Crypto</button>
+                    <button class="filter-btn" onclick="filterMarkets('index')">Indices</button>
+                    <button class="filter-btn" onclick="filterMarkets('forex')">Forex</button>
+                    <button class="filter-btn" onclick="filterMarkets('commodity')">Commodities</button>
+                </div>
+                <div id="market-list">
+                    <div class="loading"></div> Loading markets...
+                </div>
+            </div>
+        </div>
+
+        <!-- Signals Tab -->
+        <div id="signals" class="tab-content">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>AI Analysis</h3>
+                    <select id="analysis-symbol" style="width: 100%; padding: 10px; border-radius: 5px; margin-bottom: 15px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                        <option value="bitcoin">Bitcoin (BTC)</option>
+                        <option value="ethereum">Ethereum (ETH)</option>
+                        <option value="binancecoin">BNB</option>
+                        <option value="cardano">Cardano (ADA)</option>
+                        <option value="solana">Solana (SOL)</option>
+                        <option value="US100">NASDAQ 100 (US100)</option>
+                    </select>
+                    <button class="btn" onclick="analyzeSymbol()">🔍 Analyze</button>
+                    <div id="analysis-result"></div>
+                </div>
+                
+                <div class="card">
+                    <h3>Quick Signals</h3>
+                    <button class="btn btn-secondary" onclick="getQuickSignals()">⚡ Get Signals</button>
+                    <div id="quick-signals"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Tab -->
+        <div id="portfolio" class="tab-content">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>Portfolio Overview</h3>
+                    <div id="portfolio-data">
+                        <div class="loading"></div> Loading portfolio...
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Active Alerts</h3>
+                    <div id="alerts-list">
+                        <div class="loading"></div> Loading alerts...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- News Tab -->
+        <div id="news" class="tab-content">
+            <div class="card">
+                <h3>Market News & Updates</h3>
+                <div id="news-list">
+                    <div class="loading"></div> Loading news...
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Tab -->
+        <div id="charts" class="tab-content">
+            <div class="card">
+                <h3>Trading Charts</h3>
+                <select id="chart-symbol" style="width: 100%; padding: 10px; border-radius: 5px; margin-bottom: 15px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                    <option value="BTCUSD">Bitcoin (BTC/USD)</option>
+                    <option value="ETHUSD">Ethereum (ETH/USD)</option>
+                    <option value="BNBUSD">BNB (BNB/USD)</option>
+                    <option value="ADAUSD">Cardano (ADA/USD)</option>
+                    <option value="SOLUSD">Solana (SOL/USD)</option>
+                    <option value="NAS100">NASDAQ 100</option>
+                    <option value="SPX500">S&P 500</option>
+                    <option value="EURUSD">EUR/USD</option>
+                    <option value="XAUUSD">Gold (XAU/USD)</option>
+                </select>
+                <div class="chart-container" id="tradingview-chart">
+                    <div class="loading"></div> Loading chart...
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="card">
-        <h3>⚡ Quick Signal</h3>
-        <select id="quickSymbol" class="select">
-            <option value="BTC/USDT">Bitcoin (BTC/USDT)</option>
-            <option value="ETH/USDT">Ethereum (ETH/USDT)</option>
-            <option value="BNB/USDT">Binance Coin (BNB/USDT)</option>
-            <option value="ADA/USDT">Cardano (ADA/USDT)</option>
-            <option value="US100">NASDAQ 100 (US100)</option>
-        </select>
-        <button class="button" onclick="getQuickSignal()">🎯 Get Quick Signal</button>
-        <button class="button" onclick="getAIAnalysis()">🤖 Get AI Analysis</button>
-        <div id="signalResult"></div>
-    </div>
-
-    <div class="card">
-        <h3>📊 Live Chart</h3>
-        <div id="tradingview_chart" class="chart-container"></div>
-    </div>
-
     <script>
-        const tg = window.Telegram?.WebApp;
-        if (tg) { tg.ready(); tg.expand(); }
+        // Initialize Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
 
-        async function loadMarketOverview() {
+        let currentFilter = 'all';
+        let marketData = [];
+
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Load tab-specific data
+            if (tabName === 'portfolio') loadPortfolio();
+            if (tabName === 'news') loadNews();
+            if (tabName === 'charts') loadChart();
+        }
+
+        // Market filtering
+        function filterMarkets(category) {
+            currentFilter = category;
+            
+            // Update filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            displayMarkets();
+        }
+
+        // Fetch and display market data
+        async function loadMarkets() {
             try {
                 const response = await fetch('/api/market-overview');
                 const data = await response.json();
-                const container = document.getElementById('marketOverview');
-                container.innerHTML = '';
-                Object.entries(data).forEach(([symbol, info]) => {
-                    const changeClass = info.change >= 0 ? 'positive' : 'negative';
-                    const changeSign = info.change >= 0 ? '+' : '';
-                    container.innerHTML += `
-                        <div class="price-item">
-                            <div class="symbol">${symbol}</div>
-                            <div class="price">$${parseFloat(info.price).toFixed(2)}</div>
-                            <div class="change ${changeClass}">${changeSign}${parseFloat(info.change).toFixed(2)}%</div>
-                        </div>`;
-                });
-            } catch (error) { console.error('Error loading market overview:', error); }
-        }
-
-        async function getQuickSignal() {
-            const symbol = document.getElementById('quickSymbol').value;
-            const container = document.getElementById('signalResult');
-            container.innerHTML = '<div class="loading">Generating signal...</div>';
-            try {
-                const encodedSymbol = encodeURIComponent(symbol);
-                const response = await fetch(`/api/quick-signal/${encodedSymbol}`);
-                const data = await response.json();
-                const signalClass = data.recommendation.toLowerCase().includes('buy') ? '' : 
-                                  data.recommendation.toLowerCase().includes('sell') ? ' sell' : ' hold';
-                container.innerHTML = `
-                    <div class="signal-card${signalClass}">
-                        <h4>${data.symbol} - ${data.recommendation}</h4>
-                        <p><strong>Confidence:</strong> ${data.confidence}</p>
-                        <p><strong>Price:</strong> $${parseFloat(data.price).toFixed(2)}</p>
-                        <p><strong>24h Change:</strong> ${data.change}</p>
-                        <small>Generated: ${new Date(data.timestamp).toLocaleTimeString()}</small>
-                    </div>`;
-            } catch (error) {
-                container.innerHTML = '<div class="card">Error generating signal. Please try again.</div>';
-            }
-        }
-
-        async function getAIAnalysis() {
-            const container = document.getElementById('signalResult');
-            container.innerHTML = '<div class="loading">AI is analyzing the market...</div>';
-            try {
-                const response = await fetch('/api/analyze');
-                const data = await response.json();
-                const signalClass = data.recommendations.position === 'Long' ? '' : 
-                                  data.recommendations.position === 'Short' ? ' sell' : ' hold';
-                container.innerHTML = `
-                    <div class="signal-card${signalClass}">
-                        <h4>🤖 AI Analysis</h4>
-                        <p><strong>Analysis:</strong> ${data.analysis}</p>
-                        <div style="margin-top: 15px;">
-                            <p><strong>Position:</strong> ${data.recommendations.position}</p>
-                            <p><strong>Entry Price:</strong> $${data.recommendations.entry}</p>
-                            <p><strong>Confidence:</strong> ${data.recommendations.possibility}</p>
-                        </div>
-                    </div>`;
-            } catch (error) {
-                container.innerHTML = '<div class="card">Error getting AI analysis. Please try again.</div>';
-            }
-        }
-
-        function initTradingViewChart() {
-            try {
-                if (typeof TradingView !== 'undefined') {
-                    new TradingView.widget({
-                        "width": '100%', "height": 360, "symbol": "BINANCE:BTCUSDT", "interval": "1H",
-                        "timezone": "Etc/UTC", "theme": "dark", "style": "1", "locale": "en",
-                        "toolbar_bg": "#f1f3f6", "enable_publishing": false, "hide_top_toolbar": false,
-                        "hide_legend": true, "save_image": false, "container_id": "tradingview_chart"
-                    });
+                
+                if (data.success) {
+                    marketData = data.data;
+                    displayMarkets();
                 } else {
-                    document.getElementById('tradingview_chart').innerHTML = 
-                        '<div class="loading">Chart loading... Please wait or refresh the page.</div>';
+                    throw new Error(data.error);
                 }
             } catch (error) {
-                console.error('TradingView chart error:', error);
-                document.getElementById('tradingview_chart').innerHTML = 
-                    '<div class="loading">Chart unavailable. Please refresh the page.</div>';
+                console.error('Error loading markets:', error);
+                document.getElementById('market-list').innerHTML = 
+                    '<div style="color: #f44336;">Failed to load market data</div>';
             }
         }
 
+        // Display filtered markets
+        function displayMarkets() {
+            const filteredData = currentFilter === 'all' 
+                ? marketData 
+                : marketData.filter(item => item.type === currentFilter);
+            
+            const marketList = document.getElementById('market-list');
+            
+            if (filteredData.length === 0) {
+                marketList.innerHTML = '<div>No markets found</div>';
+                return;
+            }
+            
+            marketList.innerHTML = filteredData.map(item => `
+                <div class="market-item">
+                    <div class="market-info">
+                        <div class="market-symbol">${item.symbol}</div>
+                        <div class="market-name">${item.name}</div>
+                    </div>
+                    <div class="market-price">
+                        <div class="price">$${item.price.toLocaleString('en-US', {
+                            minimumFractionDigits: item.price < 1 ? 4 : 2,
+                            maximumFractionDigits: item.price < 1 ? 4 : 2
+                        })}</div>
+                        <div class="change ${item.change >= 0 ? 'positive' : 'negative'}">
+                            ${item.change >= 0 ? '+' : ''}${item.change.toFixed(2)}%
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Analyze symbol
+        async function analyzeSymbol() {
+            const symbol = document.getElementById('analysis-symbol').value;
+            const resultDiv = document.getElementById('analysis-result');
+            
+            resultDiv.innerHTML = '<div class="loading"></div> Analyzing...';
+            
+            try {
+                const response = await fetch(`/api/analyze?symbol=${symbol}`);
+                const analysis = await response.json();
+                
+                if (analysis.error) {
+                    throw new Error(analysis.error);
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="signal-card">
+                        <h4>${analysis.symbol}</h4>
+                        <div class="price">$${analysis.price.toLocaleString()}</div>
+                        <div class="change ${analysis.change >= 0 ? 'positive' : 'negative'}">
+                            ${analysis.change >= 0 ? '+' : ''}${analysis.change.toFixed(2)}%
+                        </div>
+                        <div class="signal-badge signal-${analysis.signal.toLowerCase()}">${analysis.signal}</div>
+                        <div>Confidence: ${analysis.confidence}%</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${analysis.confidence}%"></div>
+                        </div>
+                        <div style="font-size: 0.9rem; margin-top: 10px;">
+                            Risk Level: ${analysis.riskLevel}
+                        </div>
+                        ${analysis.reasoning.length > 0 ? `
+                            <div style="font-size: 0.8rem; margin-top: 10px; text-align: left;">
+                                <strong>Analysis:</strong><br>
+                                ${analysis.reasoning.join('<br>')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Analysis error:', error);
+                resultDiv.innerHTML = '<div style="color: #f44336;">Analysis failed</div>';
+            }
+        }
+
+        // Get quick signals
+        async function getQuickSignals() {
+            const signalsDiv = document.getElementById('quick-signals');
+            signalsDiv.innerHTML = '<div class="loading"></div> Getting signals...';
+            
+            try {
+                const response = await fetch('/api/quick-signals');
+                const data = await response.json();
+                
+                if (data.success) {
+                    signalsDiv.innerHTML = data.signals.map(signal => `
+                        <div class="market-item" style="margin: 8px 0;">
+                            <div class="market-info">
+                                <div class="market-symbol">${signal.symbol}</div>
+                                <div class="price">$${signal.price.toLocaleString()}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div class="signal-badge signal-${signal.signal.toLowerCase()}" style="font-size: 0.8rem; padding: 4px 12px;">
+                                    ${signal.signal}
+                                </div>
+                                <div style="font-size: 0.8rem; margin-top: 5px;">
+                                    ${signal.strength} (${signal.confidence.toFixed(0)}%)
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                console.error('Signals error:', error);
+                signalsDiv.innerHTML = '<div style="color: #f44336;">Failed to load signals</div>';
+            }
+        }
+
+        // Load portfolio data
+        async function loadPortfolio() {
+            const portfolioDiv = document.getElementById('portfolio-data');
+            const alertsDiv = document.getElementById('alerts-list');
+            
+            try {
+                // Load portfolio
+                const portfolioResponse = await fetch('/api/portfolio');
+                const portfolioData = await portfolioResponse.json();
+                
+                if (portfolioData.success) {
+                    const portfolio = portfolioData.portfolio;
+                    portfolioDiv.innerHTML = `
+                        <div class="portfolio-summary">
+                            <div class="portfolio-value">$${portfolio.totalValue.toLocaleString()}</div>
+                            <div class="portfolio-change ${portfolio.dailyChange >= 0 ? 'positive' : 'negative'}">
+                                ${portfolio.dailyChange >= 0 ? '+' : ''}${portfolio.dailyChange}% 
+                                (${portfolio.dailyChange >= 0 ? '+' : ''}$${portfolio.dailyChangeValue.toLocaleString()})
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            ${portfolio.positions.map(pos => `
+                                <div class="market-item">
+                                    <div class="market-info">
+                                        <div class="market-symbol">${pos.symbol}</div>
+                                        <div class="market-name">${pos.amount} ${pos.symbol}</div>
+                                    </div>
+                                    <div class="market-price">
+                                        <div class="price">$${pos.value.toLocaleString()}</div>
+                                        <div class="change ${pos.pnl >= 0 ? 'positive' : 'negative'}">
+                                            ${pos.pnl >= 0 ? '+' : ''}$${pos.pnl.toLocaleString()} (${pos.pnlPercent.toFixed(2)}%)
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                // Load alerts
+                const alertsResponse = await fetch('/api/alerts');
+                const alertsData = await alertsResponse.json();
+                
+                if (alertsData.success) {
+                    alertsDiv.innerHTML = alertsData.alerts.map(alert => `
+                        <div class="alert">
+                            <div style="font-weight: 600;">${alert.symbol} Alert</div>
+                            <div style="font-size: 0.9rem; margin: 5px 0;">${alert.message}</div>
+                            <div style="font-size: 0.8rem; opacity: 0.7;">${new Date(alert.timestamp).toLocaleTimeString()}</div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Portfolio error:', error);
+                portfolioDiv.innerHTML = '<div style="color: #f44336;">Failed to load portfolio</div>';
+            }
+        }
+
+        // Load news
+        async function loadNews() {
+            const newsDiv = document.getElementById('news-list');
+            
+            try {
+                const response = await fetch('/api/news');
+                const data = await response.json();
+                
+                if (data.success) {
+                    newsDiv.innerHTML = data.news.map(item => `
+                        <div class="news-item">
+                            <div class="news-title">${item.title}</div>
+                            <div class="news-summary">${item.summary}</div>
+                            <div class="news-time">${new Date(item.timestamp).toLocaleString()}</div>
+                            <div style="margin-top: 5px;">
+                                <span style="background: ${item.impact === 'bullish' ? '#4CAF50' : item.impact === 'bearish' ? '#f44336' : '#FFA500'}; 
+                                           padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">
+                                    ${item.impact.toUpperCase()}
+                                </span>
+                                ${item.symbols.map(symbol => `
+                                    <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 8px; font-size: 0.7rem; margin-left: 5px;">
+                                        ${symbol}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                console.error('News error:', error);
+                newsDiv.innerHTML = '<div style="color: #f44336;">Failed to load news</div>';
+            }
+        }
+
+        // Load chart
+        function loadChart() {
+            const symbol = document.getElementById('chart-symbol').value;
+            const chartDiv = document.getElementById('tradingview-chart');
+            
+            chartDiv.innerHTML = `
+                <div style="text-align: center; padding: 50px;">
+                    <div style="font-size: 1.1rem; margin-bottom: 10px;">📈 ${symbol} Chart</div>
+                    <div style="font-size: 0.9rem; opacity: 0.7;">TradingView integration ready</div>
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-secondary" onclick="openTradingView('${symbol}')">
+                            📊 Open in TradingView
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Open TradingView
+        function openTradingView(symbol) {
+            const url = `https://www.tradingview.com/chart/?symbol=${symbol}`;
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.openLink(url);
+            } else {
+                window.open(url, '_blank');
+            }
+        }
+
+        // Update chart symbol
+        document.getElementById('chart-symbol').addEventListener('change', loadChart);
+
+        // Auto-refresh data
+        function startAutoRefresh() {
+            setInterval(() => {
+                loadMarkets();
+                if (document.getElementById('portfolio').classList.contains('active')) {
+                    loadPortfolio();
+                }
+            }, 30000); // Refresh every 30 seconds
+        }
+
+        // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
-            loadMarketOverview(); initTradingViewChart();
+            loadMarkets();
+            startAutoRefresh();
+            
+            console.log('🚀 CryptoSignAI Enhanced Platform Loaded');
+            console.log('📊 Features: Multi-asset trading, AI analysis, Portfolio tracking');
         });
-        setInterval(loadMarketOverview, 30000);
     </script>
 </body>
 </html>
