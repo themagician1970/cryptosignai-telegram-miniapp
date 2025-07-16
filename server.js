@@ -1,13 +1,9 @@
 // CryptoSignAI Telegram Mini App Server
-import fetch from 'node-fetch';
-import express from 'express';
-import cors from 'cors';
-import multer from 'multer';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const fetch = require('node-fetch');
+const express = require('express');
+const cors = require('cors');
+const multer = require('multer');
+const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -35,24 +31,18 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, '.')));
 
 // API Configuration
 const API_KEYS = {
-  gemini: process.env.GEMINI_API_KEY,
-  alphaVantage: process.env.ALPHA_VANTAGE_API_KEY,
-  telegramBot: process.env.TELEGRAM_BOT_TOKEN
+  gemini: process.env.GEMINI_API_KEY || 'AIzaSyBInb8NV46VBFOsSsEiEOqWuGq5wS8Y8U4',
+  alphaVantage: process.env.ALPHA_VANTAGE_API_KEY || 'demo',
+  telegramBot: process.env.TELEGRAM_BOT_TOKEN || '8053605696:AAEkjm-7Uj8DTpvgjIaVSTbESxxgW2NJdng'
 };
-
-// Validate required environment variables
-if (!API_KEYS.gemini || !API_KEYS.alphaVantage) {
-  console.error('❌ Missing required API keys in environment variables');
-  process.exit(1);
-}
 
 // Serve Mini App
 app.get('/', (req, res) => {
-  res.sendFile(join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Main analysis endpoint
