@@ -5,6 +5,11 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 
+// Production logging configuration
+const isDevelopment = process.env.NODE_ENV !== 'production';
+const log = isDevelopment ? console.log : () => {};
+const logError = console.error; // Always log errors
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -50,7 +55,7 @@ app.get('/api/analyze', async (req, res) => {
   const symbol = req.query.symbol || 'BTCUSD';
   const interval = '15min';
 
-  console.log(`[API] Analyzing ${symbol}`);
+  log(`[API] Analyzing ${symbol}`);
 
   try {
     const marketDataUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=${interval}&apikey=${API_KEYS.alphaVantage}&outputsize=compact&datatype=json`;
@@ -80,7 +85,7 @@ app.get('/api/analyze', async (req, res) => {
       throw new Error(data?.Note || 'Market data unavailable');
     }
   } catch (error) {
-    console.error('[API] Analysis error:', error.message);
+    logError('[API] Analysis error:', error.message);
     res.status(500).json({ 
       success: false, 
       error: 'Analysis failed',
@@ -118,7 +123,7 @@ app.get('/api/quick-signal', async (req, res) => {
       throw new Error('Market data unavailable');
     }
   } catch (error) {
-    console.error('[API] Quick signal error:', error.message);
+    logError('[API] Quick signal error:', error.message);
     res.status(500).json({ 
       success: false, 
       error: 'Quick signal failed' 
@@ -137,7 +142,7 @@ app.post('/api/analyze-chart-image', upload.single('chart'), async (req, res) =>
     }
 
     const userId = req.body.userId;
-    console.log(`[API] Chart image received from user ${userId}`);
+    log(`[API] Chart image received from user ${userId}`);
 
     res.json({
       success: true,
@@ -146,7 +151,7 @@ app.post('/api/analyze-chart-image', upload.single('chart'), async (req, res) =>
     });
 
   } catch (error) {
-    console.error('[API] Chart analysis error:', error.message);
+    logError('[API] Chart analysis error:', error.message);
     res.status(500).json({ 
       success: false, 
       error: 'Chart analysis failed' 
@@ -188,7 +193,7 @@ async function generateAIAnalysis(symbol, currentPrice, timeSeriesData) {
       recommendations: extractTradingRecommendations(analysisText, currentPrice)
     };
   } catch (error) {
-    console.error('[AI] Analysis error:', error.message);
+    logError('[AI] Analysis error:', error.message);
     return {
       text: 'AI analysis temporarily unavailable',
       recommendations: {
@@ -233,9 +238,9 @@ function extractTradingRecommendations(analysisText, currentPrice) {
 
 // Start server
 app.listen(port, () => {
-  console.log(`🚀 CryptoSignAI Mini App running on port ${port}`);
-  console.log(`📱 Access at: http://localhost:${port}`);
-  console.log(`🔑 Environment: ${process.env.NODE_ENV || 'development'}`);
+  log(`🚀 CryptoSignAI Mini App running on port ${port}`);
+  log(`📱 Access at: http://localhost:${port}`);
+  log(`🔑 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 export default app;

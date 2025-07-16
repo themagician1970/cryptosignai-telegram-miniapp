@@ -1,4 +1,10 @@
 // CryptoSignAI Telegram Mini App
+
+// Production logging configuration
+const isDevelopment = !window.Telegram?.WebApp?.initData;
+const log = isDevelopment ? console.log : () => {};
+const logError = console.error; // Always log errors
+
 class CryptoSignAI {
     constructor() {
         this.tg = window.Telegram.WebApp;
@@ -26,7 +32,7 @@ class CryptoSignAI {
         // Initialize chart on charts tab
         this.initTradingViewChart();
         
-        console.log('✅ CryptoSignAI Mini App initialized');
+        log('✅ CryptoSignAI Mini App initialized');
     }
 
     setupTheme() {
