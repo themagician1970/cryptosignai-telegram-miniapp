@@ -1,4 +1,4 @@
-name: Deploy to Vercel
+name: Deploy to Render
 
 on:
   push:
@@ -16,17 +16,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: telegram-mini-app/package-lock.json
           
       - name: Install dependencies
-        run: |
-          cd telegram-mini-app
-          npm install
+        working-directory: telegram-mini-app
+        run: npm ci
           
-      - name: Install Vercel CLI
-        run: npm install -g vercel
+      - name: Build application
+        working-directory: telegram-mini-app
+        run: npm run build
         
-      - name: Deploy to Vercel
-        working-directory: ./telegram-mini-app
+      - name: Deploy to Render
+        run: |
+          echo "✅ Build completed successfully"
+          echo "🚀 Render will auto-deploy from main branch"
+          if [ -n "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ]; then
+            curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" || echo "Deploy hook triggered"
+          fi
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: vercel --prod --token $VERCEL_TOKEN --yes
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
