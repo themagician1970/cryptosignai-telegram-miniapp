@@ -7,8 +7,8 @@ const path = require('path');
 
 // Production logging configuration
 const isDevelopment = process.env.NODE_ENV !== 'production';
-const log = isDevelopment ? console.log : () => {};
-const logError = console.error; // Always log errors
+const log = console.log; // Always log for debugging 502 issues
+const logError = console.error;
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -48,6 +48,37 @@ const API_KEYS = {
 // Serve Mini App
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    port: port,
+    memory: process.memoryUsage(),
+    version: '1.0.0'
+  });
+});
+
+// API status endpoint
+app.get('/api/status', (req, res) => {
+  res.status(200).json({
+    api: 'CryptoSignAI',
+    status: 'operational',
+    endpoints: {
+      analyze: '/api/analyze',
+      quickSignal: '/api/quick-signal',
+      upload: '/api/upload'
+    },
+    features: {
+      aiAnalysis: !!API_KEYS.gemini,
+      marketData: !!API_KEYS.alphaVantage,
+      telegramBot: !!API_KEYS.telegramBot
+    }
+  });
 });
 
 // Main analysis endpoint
@@ -159,16 +190,6 @@ app.post('/api/analyze-chart-image', upload.single('chart'), async (req, res) =>
   }
 });
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({
-    success: true,
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0'
-  });
-});
-
 // Helper Functions
 async function generateAIAnalysis(symbol, currentPrice, timeSeriesData) {
   try {
@@ -237,10 +258,38 @@ function extractTradingRecommendations(analysisText, currentPrice) {
 }
 
 // Start server
-app.listen(port, () => {
+const server = app.listen(port, '0.0.0.0', () => {
   log(`🚀 CryptoSignAI Mini App running on port ${port}`);
   log(`📱 Access at: http://localhost:${port}`);
   log(`🔑 Environment: ${process.env.NODE_ENV || 'development'}`);
+  log(`⏰ Started at: ${new Date().toISOString()}`);
 });
 
-export default app;
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  log('🛑 SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    log('💀 Process terminated');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  log('🛑 SIGINT received, shutting down gracefully');
+  server.close(() => {
+    log('💀 Process terminated');
+    process.exit(0);
+  });
+});
+
+// Error handling
+process.on('unhandledRejection', (reason, promise) => {
+  logError('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  logError('❌ Uncaught Exception:', error);
+  process.exit(1);
+});
+
+module.exports = app;
