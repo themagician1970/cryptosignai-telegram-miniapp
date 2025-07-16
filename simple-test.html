@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Simple Button Test</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { 
+            font-family: Arial; 
+            padding: 20px; 
+            background: #1e3c72; 
+            color: white; 
+            margin: 0;
+        }
+        .test-btn { 
+            padding: 20px; 
+            margin: 20px 0; 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            width: 100%;
+            font-size: 18px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 60px;
+        }
+        .test-btn:active {
+            background: #45a049;
+            transform: scale(0.95);
+        }
+        #result { 
+            margin: 20px 0; 
+            padding: 20px; 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 10px; 
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Simple Button Test</h1>
+    
+    <button class="test-btn" id="btn1">Button 1 - Click Test</button>
+    <button class="test-btn" id="btn2">Button 2 - Touch Test</button>
+    <button class="test-btn" id="btn3">Button 3 - API Test</button>
+    
+    <div id="result">
+        <div style="color: #FFD700;">Ready for testing...</div>
+        <div style="font-size: 14px; margin-top: 10px;">
+            Click any button above to test functionality.
+        </div>
+    </div>
+
+    <script>
+        // Initialize Telegram WebApp
+        let tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            tg.MainButton.setText('🔧 Test Mode');
+            tg.MainButton.show();
+            
+            document.getElementById('result').innerHTML += '<div style="color: #4CAF50;">✅ Telegram WebApp initialized</div>';
+        } else {
+            document.getElementById('result').innerHTML += '<div style="color: #FFA500;">⚠️ Running in browser mode</div>';
+        }
+
+        // Test 1: Basic click
+        document.getElementById('btn1').addEventListener('click', function() {
+            document.getElementById('result').innerHTML = `
+                <div style="color: #4CAF50;">✅ Button 1 Works!</div>
+                <div>Click event triggered successfully</div>
+                <div>Time: ${new Date().toLocaleTimeString()}</div>
+            `;
+            
+            if (tg?.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        });
+
+        // Test 2: Touch events
+        document.getElementById('btn2').addEventListener('touchend', function(e) {
+            e.preventDefault();
+            document.getElementById('result').innerHTML = `
+                <div style="color: #4CAF50;">✅ Button 2 Works!</div>
+                <div>Touch event triggered successfully</div>
+                <div>Time: ${new Date().toLocaleTimeString()}</div>
+            `;
+            
+            if (tg?.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('heavy');
+            }
+        });
+
+        // Also add click fallback for button 2
+        document.getElementById('btn2').addEventListener('click', function(e) {
+            document.getElementById('result').innerHTML = `
+                <div style="color: #2196F3;">✅ Button 2 Works! (Click fallback)</div>
+                <div>Click fallback event triggered</div>
+                <div>Time: ${new Date().toLocaleTimeString()}</div>
+            `;
+        });
+
+        // Test 3: API call
+        document.getElementById('btn3').addEventListener('click', async function() {
+            document.getElementById('result').innerHTML = `
+                <div style="color: #FFA500;">🔄 Testing API...</div>
+            `;
+            
+            try {
+                const response = await fetch('/api/analyze?symbol=bitcoin');
+                const data = await response.json();
+                
+                document.getElementById('result').innerHTML = `
+                    <div style="color: #4CAF50;">✅ API Test Works!</div>
+                    <div>Symbol: ${data.symbol}</div>
+                    <div>Price: $${data.price}</div>
+                    <div>Signal: ${data.signal}</div>
+                    <div>Time: ${new Date().toLocaleTimeString()}</div>
+                `;
+                
+                if (tg?.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('success');
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div style="color: #f44336;">❌ API Test Failed</div>
+                    <div>Error: ${error.message}</div>
+                    <div>Time: ${new Date().toLocaleTimeString()}</div>
+                `;
+                
+                if (tg?.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('error');
+                }
+            }
+        });
+
+        // Add touch fallback for button 3
+        document.getElementById('btn3').addEventListener('touchend', function(e) {
+            e.preventDefault();
+            this.click(); // Trigger the click event
+        });
+
+        // Visual feedback for all buttons
+        document.querySelectorAll('.test-btn').forEach(btn => {
+            btn.addEventListener('touchstart', function() {
+                this.style.background = '#45a049';
+            });
+            
+            btn.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    this.style.background = '#4CAF50';
+                }, 100);
+            });
+        });
+
+        console.log('🔧 Simple test page loaded');
+        console.log('Telegram WebApp available:', !!tg);
+    </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Telegram Button Test</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { 
+            font-family: Arial; 
+            padding: 20px; 
+            background: #1e3c72; 
+            color: white; 
+            margin: 0;
+        }
+        .test-btn { 
+            padding: 15px 30px; 
+            margin: 15px 0; 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            width: 100%;
+            font-size: 16px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 44px;
+        }
+        .test-btn:active {
+            background: #45a049;
+            transform: scale(0.95);
+        }
+        #result { 
+            margin-top: 20px; 
+            padding: 20px; 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 10px; 
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Telegram Button Test</h1>
+    
+    <button class="test-btn" id="test1">Test Button 1 (onclick)</button>
+    <button class="test-btn" id="test2">Test Button 2 (addEventListener)</button>
+    <button class="test-btn" id="test3">Test Button 3 (Touch Events)</button>
+    
+    <div id="result">Ready to test buttons...</div>
+
+    <script>
+        // Initialize Telegram WebApp
+        let tg = window.Telegram.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            tg.MainButton.setText('🧪 Telegram Test');
+            tg.MainButton.show();
+        }
+
+        function test1() {
+            document.getElementById('result').innerHTML = '✅ Button 1 works! (onclick method)';
+            if (tg && tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        }
+
+        // Test 2: addEventListener
+        document.getElementById('test2').addEventListener('click', function() {
+            document.getElementById('result').innerHTML = '✅ Button 2 works! (addEventListener method)';
+            if (tg && tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        });
+
+        // Test 3: Touch events for better Telegram support
+        document.getElementById('test3').addEventListener('touchend', function(e) {
+            e.preventDefault();
+            document.getElementById('result').innerHTML = '✅ Button 3 works! (touchend method)';
+            if (tg && tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        });
+
+        // Also add click fallback for test3
+        document.getElementById('test3').addEventListener('click', function(e) {
+            document.getElementById('result').innerHTML = '✅ Button 3 works! (click fallback)';
+            if (tg && tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        });
+
+        // Set onclick for test1
+        document.getElementById('test1').onclick = test1;
+    </script>
+</body>
+</html>

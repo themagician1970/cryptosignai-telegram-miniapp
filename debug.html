@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Button Debug Test</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { 
+            font-family: Arial; 
+            padding: 20px; 
+            background: #1e3c72; 
+            color: white; 
+            margin: 0;
+        }
+        .test-btn { 
+            padding: 15px 30px; 
+            margin: 15px 0; 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            width: 100%;
+            font-size: 16px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 44px;
+        }
+        .test-btn:active {
+            background: #45a049;
+            transform: scale(0.95);
+        }
+        #result { 
+            margin-top: 20px; 
+            padding: 20px; 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 10px; 
+        }
+    </style>
+</head>
+<body>
+    <h1>🐛 Button Debug Test</h1>
+    
+    <button class="test-btn" id="analyze-test">🔍 Test Analyze Function</button>
+    <button class="test-btn" id="live-analysis-test">⚡ Test Live Analysis</button>
+    <button class="test-btn" id="upload-test">📸 Test Chart Upload</button>
+    
+    <div id="result">Click any button to test...</div>
+
+    <script>
+        // Initialize Telegram WebApp
+        let tg = window.Telegram.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            tg.MainButton.setText('🐛 Debug Mode');
+            tg.MainButton.show();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Test analyze function
+            document.getElementById('analyze-test').addEventListener('click', function() {
+                testAnalyze();
+            });
+            
+            document.getElementById('analyze-test').addEventListener('touchend', function(e) {
+                e.preventDefault();
+                testAnalyze();
+            });
+
+            // Test live analysis
+            document.getElementById('live-analysis-test').addEventListener('click', function() {
+                testLiveAnalysis();
+            });
+            
+            document.getElementById('live-analysis-test').addEventListener('touchend', function(e) {
+                e.preventDefault();
+                testLiveAnalysis();
+            });
+
+            // Test upload
+            document.getElementById('upload-test').addEventListener('click', function() {
+                document.getElementById('result').innerHTML = '✅ Upload button works!';
+            });
+            
+            document.getElementById('upload-test').addEventListener('touchend', function(e) {
+                e.preventDefault();
+                document.getElementById('result').innerHTML = '✅ Upload button works! (touch)';
+            });
+        });
+
+        async function testAnalyze() {
+            document.getElementById('result').innerHTML = '🔄 Testing analyze API...';
+            
+            try {
+                const response = await fetch('/api/analyze?symbol=bitcoin');
+                const data = await response.json();
+                
+                document.getElementById('result').innerHTML = `
+                    ✅ Analyze API works!<br>
+                    Symbol: ${data.symbol}<br>
+                    Price: $${data.price}<br>
+                    Signal: ${data.signal}
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+
+        async function testLiveAnalysis() {
+            document.getElementById('result').innerHTML = '🔄 Testing live analysis API...';
+            
+            try {
+                const response = await fetch('/api/chart-analysis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        symbol: 'BTCUSD',
+                        chartData: 'test'
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('result').innerHTML = `
+                        ✅ Live Analysis API works!<br>
+                        Symbol: ${data.analysis.symbol}<br>
+                        Signal: ${data.analysis.signal}<br>
+                        Entry: $${data.analysis.entryPrice.toFixed(2)}
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = '❌ API returned error';
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

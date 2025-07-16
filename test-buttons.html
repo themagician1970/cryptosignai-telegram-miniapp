@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Test</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1e3c72;
+            color: white;
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            display: block;
+            width: 200px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .btn:active {
+            background: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            min-height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Button Test</h1>
+    
+    <button class="btn" id="test1">Test Button 1</button>
+    <button class="btn" id="test2">Test Button 2</button>
+    <button class="btn" id="test3">API Test</button>
+    
+    <div id="result">Click a button to test...</div>
+
+    <script>
+        console.log('🔧 Test page loaded');
+        
+        // Initialize Telegram
+        let tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            console.log('✅ Telegram WebApp ready');
+        }
+
+        function updateResult(message) {
+            document.getElementById('result').innerHTML = message;
+            console.log('📝', message);
+        }
+
+        function testAPI() {
+            updateResult('🔄 Testing API...');
+            fetch('/api/analyze?symbol=bitcoin')
+                .then(response => response.json())
+                .then(data => {
+                    updateResult(`✅ API works! Price: $${data.price.toLocaleString()}, Signal: ${data.signal}`);
+                })
+                .catch(error => {
+                    updateResult(`❌ API error: ${error.message}`);
+                });
+        }
+
+        // Method 1: addEventListener
+        document.getElementById('test1').addEventListener('click', function(e) {
+            e.preventDefault();
+            updateResult('✅ Test 1 clicked (addEventListener)');
+        });
+
+        document.getElementById('test1').addEventListener('touchend', function(e) {
+            e.preventDefault();
+            updateResult('✅ Test 1 touched (touchend)');
+        });
+
+        // Method 2: onclick
+        document.getElementById('test2').onclick = function(e) {
+            e.preventDefault();
+            updateResult('✅ Test 2 clicked (onclick)');
+        };
+
+        // Method 3: API test
+        document.getElementById('test3').addEventListener('click', function(e) {
+            e.preventDefault();
+            testAPI();
+        });
+
+        document.getElementById('test3').addEventListener('touchend', function(e) {
+            e.preventDefault();
+            testAPI();
+        });
+
+        // Log all click events
+        document.addEventListener('click', function(e) {
+            console.log('🖱️ Click detected on:', e.target.tagName, e.target.id || e.target.className);
+        });
+
+        document.addEventListener('touchend', function(e) {
+            console.log('👆 Touch detected on:', e.target.tagName, e.target.id || e.target.className);
+        });
+
+        console.log('🚀 Event listeners attached');
+    </script>
+</body>
+</html>

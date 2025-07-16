@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <title>CryptoSignAI - Advanced Trading Platform</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }        .nav-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 44px; /* Minimum touch target size for mobile */
+        }
+        .nav-tab.active {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+        .nav-tab:hover, .nav-tab:active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .nav-tab.active:hover, .nav-tab.active:active {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .grid {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            color: #FFD700;
+            font-size: 1.2rem;
+        }
+
+        .market-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .market-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .market-info {
+            flex: 1;
+        }
+
+        .market-symbol {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 3px;
+        }
+
+        .market-name {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .market-price {
+            text-align: right;
+        }
+
+        .price {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .change {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .positive {
+            color: #4CAF50;
+        }
+
+        .negative {
+            color: #f44336;
+        }
+
+        .neutral {
+            color: #FFA500;
+        }
+
+        .signal-card {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .signal-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1rem;
+            margin: 10px 0;
+        }
+
+        .signal-buy {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .signal-sell {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .signal-hold {
+            background: linear-gradient(45deg, #FFA500, #FF8C00);
+            color: white;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #FFD700);
+            transition: width 0.5s ease;
+        }        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin: 5px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .btn:hover, .btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }        .btn-secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .btn-secondary:hover, .btn-secondary:active {
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+        .btn-secondary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        .portfolio-summary {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .portfolio-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .portfolio-change {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .news-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .news-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .news-summary {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .news-time {
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid #FFA500;
+            background: rgba(255, 165, 0, 0.1);
+        }
+
+        .chart-container {
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-live {
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .category-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: transparent;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border-color: #4CAF50;
+        }
+
+        .trading-analysis {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #4CAF50;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .trading-analysis h4 {
+            color: #FFD700;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .analysis-section {
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .analysis-section:last-child {
+            border-bottom: none;
+        }
+
+        .analysis-label {
+            color: #FFD700;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .analysis-value {
+            color: white;
+            margin-left: 10px;
+        }
+
+        .entry-point, .take-profit, .stop-loss {
+            margin: 5px 0;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .entry-point {
+            background: rgba(33, 150, 243, 0.2);
+            border-left: 3px solid #2196F3;
+        }
+
+        .take-profit {
+            background: rgba(76, 175, 80, 0.2);
+            border-left: 3px solid #4CAF50;
+        }
+
+        .stop-loss {
+            background: rgba(244, 67, 54, 0.2);
+            border-left: 3px solid #f44336;
+        }
+
+        .risk-reward {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 193, 7, 0.2);
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tab {
+                font-size: 12px;
+                padding: 12px 8px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 CryptoSignAI</h1>
+            <p><span class="status-indicator status-live"></span>Advanced AI Trading Platform</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="markets">📊 Markets</button>
+            <button class="nav-tab" data-tab="signals">⚡ Signals</button>
+            <button class="nav-tab" data-tab="portfolio">💼 Portfolio</button>
+            <button class="nav-tab" data-tab="news">📰 News</button>
+            <button class="nav-tab" data-tab="charts">📈 Charts</button>
+        </div>
+
+        <!-- Markets Tab -->
+        <div id="markets" class="tab-content active">
+            <div class="card">
+                <h3>Multi-Asset Markets</h3>
+                <div class="category-filter">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="crypto">Crypto</button>
+                    <button class="filter-btn" data-filter="index">Indices</button>
+                    <button class="filter-btn" data-filter="forex">Forex</button>
+                    <button class="filter-btn" data-filter="commodity">Commodities</button>
+                </div>
+                <div id="market-list">
+                    <div class="loading"></div> Loading markets...
+                </div>
+            </div>
+        </div>
+
+        <!-- Signals Tab -->
+        <div id="signals" class="tab-content">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>AI Analysis</h3>
+                    <select id="analysis-symbol" style="width: 100%; padding: 10px; border-radius: 5px; margin-bottom: 15px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                        <option value="bitcoin">Bitcoin (BTC)</option>
+                        <option value="ethereum">Ethereum (ETH)</option>
+                        <option value="binancecoin">BNB</option>
+                        <option value="cardano">Cardano (ADA)</option>
+                        <option value="solana">Solana (SOL)</option>
+                        <option value="US100">NASDAQ 100 (US100)</option>
+                    </select>
+                    <button class="btn" id="analyze-btn">🔍 Analyze</button>
+                    <div id="analysis-result"></div>
+                </div>
+                
+                <div class="card">
+                    <h3>Quick Signals</h3>
+                    <button class="btn btn-secondary" id="quick-signals-btn">⚡ Get Signals</button>
+                    <div id="quick-signals"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Tab -->
+        <div id="portfolio" class="tab-content">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>Portfolio Overview</h3>
+                    <div id="portfolio-data">
+                        <div class="loading"></div> Loading portfolio...
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Active Alerts</h3>
+                    <div id="alerts-list">
+                        <div class="loading"></div> Loading alerts...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- News Tab -->
+        <div id="news" class="tab-content">
+            <div class="card">
+                <h3>Market News & Updates</h3>
+                <div id="news-list">
+                    <div class="loading"></div> Loading news...
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Tab -->
+        <div id="charts" class="tab-content">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>Trading Charts</h3>
+                    <select id="chart-symbol" style="width: 100%; padding: 10px; border-radius: 5px; margin-bottom: 15px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                        <option value="BTCUSD">Bitcoin (BTC/USD)</option>
+                        <option value="ETHUSD">Ethereum (ETH/USD)</option>
+                        <option value="BNBUSD">BNB (BNB/USD)</option>
+                        <option value="ADAUSD">Cardano (ADA/USD)</option>
+                        <option value="SOLUSD">Solana (SOL/USD)</option>
+                        <option value="NAS100">NASDAQ 100</option>
+                        <option value="SPX500">S&P 500</option>
+                        <option value="EURUSD">EUR/USD</option>
+                        <option value="XAUUSD">Gold (XAU/USD)</option>
+                    </select>
+                    <div class="chart-container" id="tradingview-chart">
+                        <div class="loading"></div> Loading chart...
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>📊 Professional Chart Analysis</h3>
+                    <div style="margin-bottom: 15px;">
+                        <input type="file" id="chart-upload" accept="image/*" style="display: none;">
+                        <button class="btn" id="upload-chart-btn">📸 Upload Chart</button>
+                        <button class="btn btn-secondary" id="live-analysis-btn">⚡ Live Analysis</button>
+                    </div>
+                    <div id="chart-analysis-result">
+                        <div style="text-align: center; padding: 20px; opacity: 0.7;">
+                            📈 Upload a chart or get live analysis for professional trading signals
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Telegram WebApp
+        let tg = window.Telegram.WebApp;
+        
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            
+            // Enable closing confirmation
+            tg.enableClosingConfirmation();
+            
+            // Set header color
+            tg.setHeaderColor('#1e3c72');
+            
+            // Show main button for key actions
+            tg.MainButton.setText('🚀 CryptoSignAI Ready');
+            tg.MainButton.show();
+            
+            // Handle viewport changes
+            tg.onEvent('viewportChanged', function() {
+                console.log('Telegram viewport changed');
+            });
+            
+            // Send haptic feedback for interactions
+            function sendHapticFeedback() {
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('medium');
+                }
+            }
+            
+            // Add haptic feedback to all buttons
+            document.addEventListener('DOMContentLoaded', function() {
+                const buttons = document.querySelectorAll('button, .btn, .nav-tab, .filter-btn');
+                buttons.forEach(button => {
+                    button.addEventListener('touchstart', sendHapticFeedback);
+                    button.addEventListener('click', sendHapticFeedback);
+                });
+            });
+        }
+
+        let currentFilter = 'all';
+        let marketData = [];
+
+        // Tab switching with Telegram support
+        function showTab(tabName) {
+            // Send haptic feedback
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.selectionChanged();
+            }
+            
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Set active tab
+            document.querySelector(`.nav-tab[data-tab="${tabName}"]`).classList.add('active');
+            
+            // Load tab-specific data
+            if (tabName === 'portfolio') loadPortfolio();
+            if (tabName === 'news') loadNews();
+            if (tabName === 'charts') loadChart();
+            
+            // Update Telegram main button based on active tab
+            if (window.Telegram && window.Telegram.WebApp) {
+                const mainButton = window.Telegram.WebApp.MainButton;
+                switch(tabName) {
+                    case 'signals':
+                        mainButton.setText('⚡ Generate Signals');
+                        mainButton.onClick(getQuickSignals);
+                        break;
+                    case 'charts':
+                        mainButton.setText('📊 Live Analysis');
+                        mainButton.onClick(generateLiveAnalysis);
+                        break;
+                    default:
+                        mainButton.setText('🚀 CryptoSignAI Ready');
+                        mainButton.offClick();
+                }
+            }
+        }
+
+        // Market filtering
+        function filterMarkets(category, targetButton) {
+            currentFilter = category;
+            
+            // Update filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            if (targetButton) {
+                targetButton.classList.add('active');
+            } else {
+                // Fallback if no target button provided
+                document.querySelector(`.filter-btn[data-filter="${category}"]`).classList.add('active');
+            }
+            
+            displayMarkets();
+        }
+
+        // Fetch and display market data
+        async function loadMarkets() {
+            try {
+                const response = await fetch('/api/market-overview');
+                const data = await response.json();
+                
+                if (data.success) {
+                    marketData = data.data;
+                    displayMarkets();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                console.error('Error loading markets:', error);
+                document.getElementById('market-list').innerHTML = 
+                    '<div style="color: #f44336;">Failed to load market data</div>';
+            }
+        }
+
+        // Display filtered markets
+        function displayMarkets() {
+            const filteredData = currentFilter === 'all' 
+                ? marketData 
+                : marketData.filter(item => item.type === currentFilter);
+            
+            const marketList = document.getElementById('market-list');
+            
+            if (filteredData.length === 0) {
+                marketList.innerHTML = '<div>No markets found</div>';
+                return;
+            }
+            
+            marketList.innerHTML = filteredData.map(item => `
+                <div class="market-item">
+                    <div class="market-info">
+                        <div class="market-symbol">${item.symbol}</div>
+                        <div class="market-name">${item.name}</div>
+                    </div>
+                    <div class="market-price">
+                        <div class="price">$${item.price.toLocaleString('en-US', {
+                            minimumFractionDigits: item.price < 1 ? 4 : 2,
+                            maximumFractionDigits: item.price < 1 ? 4 : 2
+                        })}</div>
+                        <div class="change ${item.change >= 0 ? 'positive' : 'negative'}">
+                            ${item.change >= 0 ? '+' : ''}${item.change.toFixed(2)}%
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Analyze symbol with Telegram support
+        async function analyzeSymbol() {
+            console.log('🔍 analyzeSymbol() called');
+            
+            // Send haptic feedback
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            }
+            
+            const symbol = document.getElementById('analysis-symbol').value;
+            const resultDiv = document.getElementById('analysis-result');
+            
+            console.log('Selected symbol:', symbol);
+            
+            resultDiv.innerHTML = '<div class="loading"></div> Analyzing...';
+            
+            try {
+                const response = await fetch(`/api/analyze?symbol=${symbol}`);
+                const analysis = await response.json();
+                
+                console.log('Analysis result:', analysis);
+                
+                if (analysis.error) {
+                    throw new Error(analysis.error);
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="signal-card">
+                        <h4>${analysis.symbol}</h4>
+                        <div class="price">$${analysis.price.toLocaleString()}</div>
+                        <div class="change ${analysis.change >= 0 ? 'positive' : 'negative'}">
+                            ${analysis.change >= 0 ? '+' : ''}${analysis.change.toFixed(2)}%
+                        </div>
+                        <div class="signal-badge signal-${analysis.signal.toLowerCase()}">${analysis.signal}</div>
+                        <div>Confidence: ${analysis.confidence}%</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${analysis.confidence}%"></div>
+                        </div>
+                        <div style="font-size: 0.9rem; margin-top: 10px;">
+                            Risk Level: ${analysis.riskLevel}
+                        </div>
+                        ${analysis.reasoning.length > 0 ? `
+                            <div style="font-size: 0.8rem; margin-top: 10px; text-align: left;">
+                                <strong>Analysis:</strong><br>
+                                ${analysis.reasoning.join('<br>')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                // Send success feedback
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                }
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                resultDiv.innerHTML = '<div style="color: #f44336;">Analysis failed</div>';
+                
+                // Send error feedback
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+                }
+            }
+        }
+
+        // Get quick signals
+        async function getQuickSignals() {
+            const signalsDiv = document.getElementById('quick-signals');
+            signalsDiv.innerHTML = '<div class="loading"></div> Getting signals...';
+            
+            try {
+                const response = await fetch('/api/quick-signals');
+                const data = await response.json();
+                
+                if (data.success) {
+                    signalsDiv.innerHTML = data.signals.map(signal => `
+                        <div class="market-item" style="margin: 8px 0;">
+                            <div class="market-info">
+                                <div class="market-symbol">${signal.symbol}</div>
+                                <div class="price">$${signal.price.toLocaleString()}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div class="signal-badge signal-${signal.signal.toLowerCase()}" style="font-size: 0.8rem; padding: 4px 12px;">
+                                    ${signal.signal}
+                                </div>
+                                <div style="font-size: 0.8rem; margin-top: 5px;">
+                                    ${signal.strength} (${signal.confidence.toFixed(0)}%)
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                console.error('Signals error:', error);
+                signalsDiv.innerHTML = '<div style="color: #f44336;">Failed to load signals</div>';
+            }
+        }
+
+        // Load portfolio data
+        async function loadPortfolio() {
+            const portfolioDiv = document.getElementById('portfolio-data');
+            const alertsDiv = document.getElementById('alerts-list');
+            
+            try {
+                // Load portfolio
+                const portfolioResponse = await fetch('/api/portfolio');
+                const portfolioData = await portfolioResponse.json();
+                
+                if (portfolioData.success) {
+                    const portfolio = portfolioData.portfolio;
+                    portfolioDiv.innerHTML = `
+                        <div class="portfolio-summary">
+                            <div class="portfolio-value">$${portfolio.totalValue.toLocaleString()}</div>
+                            <div class="portfolio-change ${portfolio.dailyChange >= 0 ? 'positive' : 'negative'}">
+                                ${portfolio.dailyChange >= 0 ? '+' : ''}${portfolio.dailyChange}% 
+                                (${portfolio.dailyChange >= 0 ? '+' : ''}$${portfolio.dailyChangeValue.toLocaleString()})
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            ${portfolio.positions.map(pos => `
+                                <div class="market-item">
+                                    <div class="market-info">
+                                        <div class="market-symbol">${pos.symbol}</div>
+                                        <div class="market-name">${pos.amount} ${pos.symbol}</div>
+                                    </div>
+                                    <div class="market-price">
+                                        <div class="price">$${pos.value.toLocaleString()}</div>
+                                        <div class="change ${pos.pnl >= 0 ? 'positive' : 'negative'}">
+                                            ${pos.pnl >= 0 ? '+' : ''}$${pos.pnl.toLocaleString()} (${pos.pnlPercent.toFixed(2)}%)
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                // Load alerts
+                const alertsResponse = await fetch('/api/alerts');
+                const alertsData = await alertsResponse.json();
+                
+                if (alertsData.success) {
+                    alertsDiv.innerHTML = alertsData.alerts.map(alert => `
+                        <div class="alert">
+                            <div style="font-weight: 600;">${alert.symbol} Alert</div>
+                            <div style="font-size: 0.9rem; margin: 5px 0;">${alert.message}</div>
+                            <div style="font-size: 0.8rem; opacity: 0.7;">${new Date(alert.timestamp).toLocaleTimeString()}</div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Portfolio error:', error);
+                portfolioDiv.innerHTML = '<div style="color: #f44336;">Failed to load portfolio</div>';
+            }
+        }
+
+        // Load news
+        async function loadNews() {
+            const newsDiv = document.getElementById('news-list');
+            
+            try {
+                const response = await fetch('/api/news');
+                const data = await response.json();
+                
+                if (data.success) {
+                    newsDiv.innerHTML = data.news.map(item => `
+                        <div class="news-item">
+                            <div class="news-title">${item.title}</div>
+                            <div class="news-summary">${item.summary}</div>
+                            <div class="news-time">${new Date(item.timestamp).toLocaleString()}</div>
+                            <div style="margin-top: 5px;">
+                                <span style="background: ${item.impact === 'bullish' ? '#4CAF50' : item.impact === 'bearish' ? '#f44336' : '#FFA500'}; 
+                                           padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">
+                                    ${item.impact.toUpperCase()}
+                                </span>
+                                ${item.symbols.map(symbol => `
+                                    <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 8px; font-size: 0.7rem; margin-left: 5px;">
+                                        ${symbol}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                console.error('News error:', error);
+                newsDiv.innerHTML = '<div style="color: #f44336;">Failed to load news</div>';
+            }
+        }
+
+        // Load chart
+        function loadChart() {
+            const symbol = document.getElementById('chart-symbol').value;
+            const chartDiv = document.getElementById('tradingview-chart');
+            
+            chartDiv.innerHTML = `
+                <div style="text-align: center; padding: 50px;">
+                    <div style="font-size: 1.1rem; margin-bottom: 10px;">📈 ${symbol} Chart</div>
+                    <div style="font-size: 0.9rem; opacity: 0.7;">TradingView integration ready</div>
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-secondary" onclick="openTradingView('${symbol}')">
+                            📊 Open in TradingView
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Open TradingView
+        function openTradingView(symbol) {
+            const url = `https://www.tradingview.com/chart/?symbol=${symbol}`;
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.openLink(url);
+            } else {
+                window.open(url, '_blank');
+            }
+        }
+
+        // Update chart symbol
+        document.getElementById('chart-symbol').addEventListener('change', loadChart);
+
+        // Professional Chart Analysis Functions (Extension Method)
+        
+        // Handle chart upload
+        document.getElementById('chart-upload').addEventListener('change', handleChartUpload);
+        
+        async function handleChartUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const analysisDiv = document.getElementById('chart-analysis-result');
+            analysisDiv.innerHTML = '<div class="loading"></div> Analyzing chart...';
+            
+            try {
+                // Simulate chart analysis (in real implementation, you'd send to AI service)
+                await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing time
+                
+                const analysis = await generateTradingAnalysis(file.name);
+                displayTradingAnalysis(analysis);
+                
+            } catch (error) {
+                console.error('Chart analysis error:', error);
+                analysisDiv.innerHTML = getFallbackAnalysis();
+            }
+        }
+        
+        // Generate live analysis for current symbol with Telegram support
+        async function generateLiveAnalysis() {
+            console.log('⚡ generateLiveAnalysis() called');
+            
+            // Send haptic feedback
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
+            }
+            
+            const symbol = document.getElementById('chart-symbol').value;
+            const analysisDiv = document.getElementById('chart-analysis-result');
+            
+            console.log('Chart symbol:', symbol);
+            
+            analysisDiv.innerHTML = '<div class="loading"></div> Generating live analysis...';
+            
+            try {
+                // Use chart analysis API directly
+                const chartResponse = await fetch('/api/chart-analysis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        symbol: symbol,
+                        chartData: 'live-analysis'
+                    })
+                });
+                const chartData = await chartResponse.json();
+                
+                console.log('Chart analysis result:', chartData);
+                
+                if (chartData.success) {
+                    displayTradingAnalysis(chartData.analysis);
+                    
+                    // Send success feedback
+                    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                    }
+                } else {
+                    analysisDiv.innerHTML = getFallbackAnalysis();
+                }
+                
+            } catch (error) {
+                console.error('Live analysis error:', error);
+                analysisDiv.innerHTML = getFallbackAnalysis();
+                
+                // Send error feedback
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+                }
+            }
+        }
+        
+        // Generate professional trading analysis (Extension Method)
+        async function generateTradingAnalysisFromPrice(marketData, symbol) {
+            const price = marketData.price;
+            const change = marketData.change;
+            
+            // Determine trend and signal
+            let trend = 'Sideways';
+            let signal = 'HOLD';
+            
+            if (change > 2) {
+                trend = 'Bullish';
+                signal = 'BUY';
+            } else if (change < -2) {
+                trend = 'Bearish';
+                signal = 'SELL';
+            } else if (change > 0.5) {
+                trend = 'Bullish';
+                signal = 'BUY';
+            } else if (change < -0.5) {
+                trend = 'Bearish';
+                signal = 'SELL';
+            }
+            
+            // Calculate entry points and levels
+            const entryPrice = price;
+            const entryConfirmation = signal === 'BUY' ? 'Break above resistance' : 
+                                    signal === 'SELL' ? 'Break below support' : 'Wait for clear setup';
+            
+            // Calculate take profit levels
+            const tp1Distance = signal === 'BUY' ? 0.034 : -0.034; // 3.4%
+            const tp2Distance = signal === 'BUY' ? 0.065 : -0.065; // 6.5%
+            const tp3Distance = signal === 'BUY' ? 0.105 : -0.105; // 10.5%
+            
+            const tp1 = price * (1 + tp1Distance);
+            const tp2 = price * (1 + tp2Distance);
+            const tp3 = price * (1 + tp3Distance);
+            
+            // Calculate stop loss
+            const slDistance = signal === 'BUY' ? -0.029 : 0.029; // 2.9% risk
+            const stopLoss = price * (1 + slDistance);
+            
+            // Calculate support and resistance
+            const support = price * (signal === 'BUY' ? 0.975 : 0.985);
+            const resistance = price * (signal === 'BUY' ? 1.015 : 1.025);
+            
+            // Risk-to-reward ratio
+            const riskAmount = Math.abs(entryPrice - stopLoss);
+            const rewardAmount = Math.abs(tp1 - entryPrice);
+            const rrRatio = (rewardAmount / riskAmount).toFixed(1);
+            
+            return {
+                symbol: symbol,
+                trend: trend,
+                signal: signal,
+                entryPrice: entryPrice,
+                entryConfirmation: entryConfirmation,
+                tp1: tp1,
+                tp2: tp2,
+                tp3: tp3,
+                stopLoss: stopLoss,
+                support: support,
+                resistance: resistance,
+                rrRatio: rrRatio,
+                marketData: marketData
+            };
+        }
+        
+        // Generate fallback analysis for chart uploads
+        async function generateTradingAnalysis(fileName) {
+            // Simulate analysis based on file name or random generation
+            const symbols = ['BTC/USD', 'ETH/USD', 'BNB/USD', 'ADA/USD'];
+            const trends = ['Bullish', 'Bearish', 'Sideways'];
+            const signals = ['BUY', 'SELL', 'HOLD'];
+            
+            const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+            const randomTrend = trends[Math.floor(Math.random() * trends.length)];
+            const randomSignal = signals[Math.floor(Math.random() * signals.length)];
+            
+            const basePrice = 45000 + (Math.random() - 0.5) * 10000;
+            
+            return {
+                symbol: randomSymbol,
+                trend: randomTrend,
+                signal: randomSignal,
+                entryPrice: basePrice,
+                entryConfirmation: randomSignal === 'BUY' ? 'Break above resistance' : 
+                                 randomSignal === 'SELL' ? 'Break below support' : 'Wait for clear setup',
+                tp1: basePrice * (randomSignal === 'BUY' ? 1.034 : 0.966),
+                tp2: basePrice * (randomSignal === 'BUY' ? 1.065 : 0.935),
+                tp3: basePrice * (randomSignal === 'BUY' ? 1.105 : 0.895),
+                stopLoss: basePrice * (randomSignal === 'BUY' ? 0.971 : 1.029),
+                support: basePrice * 0.975,
+                resistance: basePrice * 1.025,
+                rrRatio: "3.6"
+            };
+        }
+        
+        // Display professional trading analysis (Extension Format)
+        function displayTradingAnalysis(analysis) {
+            const formatPrice = (price) => {
+                if (price < 1) return price.toFixed(4);
+                if (price < 100) return price.toFixed(2);
+                return price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            };
+            
+            const tp1Gain = ((analysis.tp1 / analysis.entryPrice - 1) * 100).toFixed(1);
+            const tp2Gain = ((analysis.tp2 / analysis.entryPrice - 1) * 100).toFixed(1);
+            const tp3Gain = ((analysis.tp3 / analysis.entryPrice - 1) * 100).toFixed(1);
+            const slRisk = ((analysis.stopLoss / analysis.entryPrice - 1) * 100).toFixed(1);
+            
+            const analysisHTML = `
+                <div class="trading-analysis">
+                    <h4>📊 CHART ANALYSIS</h4>
+                    
+                    <div class="analysis-section">
+                        <div class="analysis-label">Trend:</div>
+                        <div class="analysis-value">${analysis.trend}</div>
+                        <div class="analysis-label">Signal:</div>
+                        <div class="analysis-value"><strong>${analysis.signal}</strong></div>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <div class="analysis-label">Entry Points:</div>
+                        <div class="entry-point">
+                            • Entry Price: $${formatPrice(analysis.entryPrice)}<br>
+                            • Entry Confirmation: ${analysis.entryConfirmation}
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <div class="analysis-label">Take Profit Levels:</div>
+                        <div class="take-profit">
+                            • TP1: $${formatPrice(analysis.tp1)} - ${tp1Gain}% gain<br>
+                            • TP2: $${formatPrice(analysis.tp2)} - ${tp2Gain}% gain<br>
+                            • TP3: $${formatPrice(analysis.tp3)} - ${tp3Gain}% gain
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <div class="analysis-label">Stop Loss:</div>
+                        <div class="stop-loss">
+                            • SL: $${formatPrice(analysis.stopLoss)} - ${slRisk}% risk
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <div class="analysis-label">Support & Resistance:</div>
+                        <div class="analysis-value">
+                            • Support: $${formatPrice(analysis.support)}<br>
+                            • Resistance: $${formatPrice(analysis.resistance)}
+                        </div>
+                    </div>
+                    
+                    <div class="risk-reward">
+                        <div class="analysis-label">Risk Management:</div>
+                        <div style="margin-top: 5px;">
+                            • Risk per trade: 1-2% of portfolio<br>
+                            • R:R Ratio: 1:${analysis.rrRatio}<br>
+                            • Position Size: Based on account size
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <div class="analysis-label">Market Notes:</div>
+                        <div class="analysis-value" style="font-size: 0.85rem;">
+                            • ${analysis.trend === 'Bullish' ? 'Strong bullish momentum above MA50' : 
+                                analysis.trend === 'Bearish' ? 'Bearish pressure below key support' : 
+                                'Consolidation phase, wait for breakout'}<br>
+                            • Volume ${analysis.signal !== 'HOLD' ? 'confirms breakout pattern' : 'suggests accumulation'}<br>
+                            • Watch for ${analysis.signal === 'BUY' ? 'retest of resistance as support' : 
+                                          analysis.signal === 'SELL' ? 'breakdown confirmation' : 'clear directional move'}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('chart-analysis-result').innerHTML = analysisHTML;
+        }
+        
+        // Fallback analysis (Extension Format)
+        function getFallbackAnalysis() {
+            return `
+                <div class="trading-analysis">
+                    <h4>📊 CHART ANALYSIS</h4>
+                    
+                    <div class="analysis-section">
+                        <div class="analysis-value">Chart received and processed</div>
+                        <div class="analysis-value">• Please ensure the image shows clear price action</div>
+                        <div class="analysis-value">• Try uploading a higher quality image</div>
+                        <div class="analysis-value">• Contact support if issues persist</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Utility function to format prices
+        function formatPrice(price) {
+            if (price >= 1000) {
+                return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } else if (price >= 1) {
+                return price.toFixed(4);
+            } else {
+                return price.toFixed(8);
+            }
+        }
+
+        // Auto-refresh data
+        function startAutoRefresh() {
+            setInterval(() => {
+                loadMarkets();
+                if (document.getElementById('portfolio').classList.contains('active')) {
+                    loadPortfolio();
+                }
+            }, 30000); // Refresh every 30 seconds
+        }
+
+        // Initialize app with Telegram support
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMarkets();
+            startAutoRefresh();
+            
+            console.log('🚀 CryptoSignAI Enhanced Platform Loaded');
+            console.log('📊 Features: Multi-asset trading, AI analysis, Portfolio tracking');
+            
+            // Add event listeners for all buttons
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            console.log('🔧 Setting up event listeners...');
+            
+            // Navigation tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                console.log('Adding nav tab listener:', tab.getAttribute('data-tab'));
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const tabName = this.getAttribute('data-tab');
+                    console.log('Nav tab clicked:', tabName);
+                    showTab(tabName);
+                });
+                
+                tab.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    const tabName = this.getAttribute('data-tab');
+                    console.log('Nav tab touched:', tabName);
+                    showTab(tabName);
+                });
+            });
+
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const category = this.getAttribute('data-filter');
+                    filterMarkets(category, this);
+                });
+                
+                btn.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    const category = this.getAttribute('data-filter');
+                    filterMarkets(category, this);
+                });
+            });
+
+            // Analyze button
+            const analyzeBtn = document.getElementById('analyze-btn');
+            console.log('Analyze button found:', !!analyzeBtn);
+            if (analyzeBtn) {
+                analyzeBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Analyze button clicked');
+                    analyzeSymbol();
+                });
+                
+                analyzeBtn.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    console.log('Analyze button touched');
+                    analyzeSymbol();
+                });
+            }
+
+            // Quick signals button
+            const quickSignalsBtn = document.getElementById('quick-signals-btn');
+            console.log('Quick signals button found:', !!quickSignalsBtn);
+            if (quickSignalsBtn) {
+                quickSignalsBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Quick signals button clicked');
+                    getQuickSignals();
+                });
+                
+                quickSignalsBtn.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    console.log('Quick signals button touched');
+                    getQuickSignals();
+                });
+            }
+
+            // Upload chart button
+            const uploadChartBtn = document.getElementById('upload-chart-btn');
+            console.log('Upload chart button found:', !!uploadChartBtn);
+            if (uploadChartBtn) {
+                uploadChartBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Upload chart button clicked');
+                    document.getElementById('chart-upload').click();
+                });
+                
+                uploadChartBtn.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    console.log('Upload chart button touched');
+                    document.getElementById('chart-upload').click();
+                });
+            }
+
+            // Live analysis button
+            const liveAnalysisBtn = document.getElementById('live-analysis-btn');
+            console.log('Live analysis button found:', !!liveAnalysisBtn);
+            if (liveAnalysisBtn) {
+                liveAnalysisBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Live analysis button clicked');
+                    generateLiveAnalysis();
+                });
+                
+                liveAnalysisBtn.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    console.log('Live analysis button touched');
+                    generateLiveAnalysis();
+                });
+            }
+
+            // Add visual feedback for all buttons
+            document.querySelectorAll('button, .btn, .nav-tab, .filter-btn').forEach(button => {
+                button.addEventListener('touchstart', function(e) {
+                    this.style.transform = 'scale(0.95)';
+                    
+                    // Send haptic feedback if available
+                    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                        window.Telegram.WebApp.HapticFeedback.selectionChanged();
+                    }
+                }, { passive: true });
+                
+                button.addEventListener('touchend', function(e) {
+                    this.style.transform = '';
+                }, { passive: true });
+            });
+            
+            console.log('✅ Event listeners setup complete');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoSignAI - Minimal Test</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            width: 300px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 50px;
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            min-height: 100px;
+            font-family: monospace;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 CryptoSignAI - Minimal Test</h1>
+    
+    <button class="btn" id="analyze-btn">🔍 Analyze Bitcoin</button>
+    <button class="btn" id="quick-btn">⚡ Quick Signals</button>
+    
+    <div id="result">Click a button to test functionality...</div>
+
+    <script>
+        console.log('🔧 Minimal test page loaded');
+        
+        // Initialize Telegram
+        window.tg = window.Telegram?.WebApp;
+        if (window.tg) {
+            window.tg.ready();
+            window.tg.expand();
+            console.log('✅ Telegram WebApp initialized');
+        } else {
+            console.log('⚠️ Running in browser mode');
+        }
+
+        function updateResult(html) {
+            document.getElementById('result').innerHTML = html;
+            console.log('📝 Result updated:', html.replace(/<[^>]*>/g, ''));
+        }
+
+        async function analyzeSymbol() {
+            console.log('🔍 analyzeSymbol() called');
+            updateResult('<div class="loading"></div> Analyzing Bitcoin...');
+            
+            try {
+                const response = await fetch('/api/analyze?symbol=bitcoin');
+                const data = await response.json();
+                
+                console.log('✅ Analysis result:', data);
+                
+                updateResult(`
+                    <h3>✅ Analysis Complete</h3>
+                    <p><strong>Symbol:</strong> ${data.symbol}</p>
+                    <p><strong>Price:</strong> $${data.price.toLocaleString()}</p>
+                    <p><strong>Signal:</strong> ${data.signal}</p>
+                    <p><strong>Confidence:</strong> ${data.confidence}%</p>
+                    <p><strong>Change:</strong> ${data.change >= 0 ? '+' : ''}${data.change.toFixed(2)}%</p>
+                `);
+                
+            } catch (error) {
+                console.error('❌ Analysis error:', error);
+                updateResult(`<h3>❌ Error</h3><p>${error.message}</p>`);
+            }
+        }
+
+        async function getQuickSignals() {
+            console.log('⚡ getQuickSignals() called');
+            updateResult('<div class="loading"></div> Getting quick signals...');
+            
+            try {
+                const response = await fetch('/api/quick-signals');
+                const data = await response.json();
+                
+                console.log('✅ Quick signals result:', data);
+                
+                if (data.success) {
+                    updateResult(`
+                        <h3>⚡ Quick Signals</h3>
+                        ${data.signals.map(signal => `
+                            <p><strong>${signal.symbol}:</strong> ${signal.signal} (${signal.confidence}% confident)</p>
+                        `).join('')}
+                    `);
+                } else {
+                    updateResult('<h3>❌ Failed to load signals</h3>');
+                }
+                
+            } catch (error) {
+                console.error('❌ Quick signals error:', error);
+                updateResult(`<h3>❌ Error</h3><p>${error.message}</p>`);
+            }
+        }
+
+        // Setup event listeners when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Setting up event listeners...');
+            
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const quickBtn = document.getElementById('quick-btn');
+            
+            if (analyzeBtn) {
+                console.log('🔍 Setting up analyze button events');
+                
+                function handleAnalyze(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🔍 Analyze button triggered');
+                    analyzeSymbol();
+                }
+                
+                analyzeBtn.addEventListener('click', handleAnalyze);
+                analyzeBtn.addEventListener('touchend', handleAnalyze);
+                
+                console.log('✅ Analyze button events attached');
+            } else {
+                console.error('❌ Analyze button not found');
+            }
+            
+            if (quickBtn) {
+                console.log('⚡ Setting up quick signals button events');
+                
+                function handleQuick(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('⚡ Quick signals button triggered');
+                    getQuickSignals();
+                }
+                
+                quickBtn.addEventListener('click', handleQuick);
+                quickBtn.addEventListener('touchend', handleQuick);
+                
+                console.log('✅ Quick signals button events attached');
+            } else {
+                console.error('❌ Quick signals button not found');
+            }
+            
+            console.log('✅ All event listeners setup complete');
+        });
+
+        // Debug all clicks
+        document.addEventListener('click', function(e) {
+            console.log('🖱️ Click event:', e.target.tagName, e.target.id, e.target.className);
+        });
+
+        document.addEventListener('touchend', function(e) {
+            console.log('👆 Touch event:', e.target.tagName, e.target.id, e.target.className);
+        });
+
+        // Manual test after page load
+        setTimeout(() => {
+            console.log('🧪 Running manual tests...');
+            updateResult('🧪 Page loaded successfully. Manual test complete.');
+        }, 500);
+
+        console.log('🚀 Minimal CryptoSignAI loaded');
+    </script>
+</body>
+</html>

@@ -255,7 +255,6 @@
             <button class="nav-tab" data-tab="charts">📈 Charts</button>
             <button class="nav-tab" data-tab="portfolio">💼 Portfolio</button>
             <button class="nav-tab" data-tab="news">📰 News</button>
-            <button class="nav-tab" data-tab="button-test">🔧 Test</button>
         </div>
 
         <!-- Signals Tab -->
@@ -360,131 +359,10 @@
                 </div>
             </div>
         </div>
-
-        <!-- Button Test Tab -->
-        <div id="button-test" class="tab-content">
-            <div class="card">
-                <h3>🔧 Button Functionality Test</h3>
-                <p>Test different button implementations to find what works:</p>
-                
-                <!-- Test 1: Basic onclick -->
-                <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                    <h4>Test 1: Basic onclick</h4>
-                    <button onclick="testBasic()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px;">
-                        🧪 Basic Test
-                    </button>
-                    <div id="test1-result">Click to test...</div>
-                </div>
-
-                <!-- Test 2: addEventListener -->
-                <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                    <h4>Test 2: addEventListener</h4>
-                    <button id="test2-btn" style="padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px;">
-                        🔍 Event Listener Test
-                    </button>
-                    <div id="test2-result">Click to test...</div>
-                </div>
-
-                <!-- Test 3: API Call -->
-                <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                    <h4>Test 3: API Call</h4>
-                    <button onclick="testAPI()" style="padding: 10px 20px; background: #FF9800; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px;">
-                        📊 API Test
-                    </button>
-                    <div id="test3-result">Click to test...</div>
-                </div>
-
-                <!-- Test 4: Complex Function -->
-                <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                    <h4>Test 4: Complex Function</h4>
-                    <button onclick="testComplex()" style="padding: 10px 20px; background: #9C27B0; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px;">
-                        ⚡ Complex Test
-                    </button>
-                    <div id="test4-result">Click to test...</div>
-                </div>
-
-                <!-- Test 5: Telegram Integration -->
-                <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                    <h4>Test 5: Telegram Integration</h4>
-                    <button onclick="testTelegram()" style="padding: 10px 20px; background: #00BCD4; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px;">
-                        📱 Telegram Test
-                    </button>
-                    <div id="test5-result">Click to test...</div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
         console.log('🚀 CryptoSignAI Loading...');
-        
-        // =================
-        // BUTTON TEST FUNCTIONS - SIMPLE AND CLEAN
-        // =================
-        
-        function testBasic() {
-            console.log('✅ Basic test function called!');
-            document.getElementById('test1-result').innerHTML = '<span style="color: #4CAF50;">✅ Basic onclick works!</span>';
-        }
-        
-        function testAPI() {
-            console.log('📊 API test function called!');
-            document.getElementById('test3-result').innerHTML = '<span style="color: #FFD700;">🔄 Testing API...</span>';
-            
-            fetch('/api/analyze?symbol=bitcoin')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('test3-result').innerHTML = 
-                        '<span style="color: #4CAF50;">✅ API works! Symbol: ' + data.symbol + ', Price: $' + data.price + '</span>';
-                })
-                .catch(error => {
-                    document.getElementById('test3-result').innerHTML = 
-                        '<span style="color: #f44336;">❌ API failed: ' + error.message + '</span>';
-                });
-        }
-        
-        function testComplex() {
-            console.log('⚡ Complex test function called!');
-            document.getElementById('test4-result').innerHTML = '<span style="color: #FFD700;">🔄 Running complex test...</span>';
-            
-            // Simulate complex operation
-            setTimeout(() => {
-                const randomPrice = (Math.random() * 50000 + 30000).toFixed(2);
-                document.getElementById('test4-result').innerHTML = 
-                    '<span style="color: #4CAF50;">✅ Complex function works! Generated price: $' + randomPrice + '</span>';
-            }, 1000);
-        }
-        
-        function testTelegram() {
-            console.log('📱 Telegram test function called!');
-            const result = document.getElementById('test5-result');
-            
-            if (window.Telegram && window.Telegram.WebApp) {
-                result.innerHTML = '<span style="color: #4CAF50;">✅ Telegram WebApp detected!</span>';
-                
-                if (window.Telegram.WebApp.HapticFeedback) {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-                    result.innerHTML += '<br><span style="color: #00BCD4;">📳 Haptic feedback triggered!</span>';
-                }
-            } else {
-                result.innerHTML = '<span style="color: #FF9800;">⚠️ Not running in Telegram (browser mode)</span>';
-            }
-        }
-        
-        // Initialize Test 2 (addEventListener)
-        document.addEventListener('DOMContentLoaded', function() {
-            const test2Btn = document.getElementById('test2-btn');
-            if (test2Btn) {
-                test2Btn.addEventListener('click', function() {
-                    console.log('🔍 Event listener test called!');
-                    document.getElementById('test2-result').innerHTML = '<span style="color: #2196F3;">✅ addEventListener works!</span>';
-                });
-            }
-        });
-        
-        // =================
-        // END TEST FUNCTIONS
-        // =================
         
         // Initialize Telegram WebApp with proper error handling
         let tg = window.Telegram?.WebApp;
@@ -943,83 +821,111 @@
             }
         }
 
-        // OLD COMPLEX EVENT LISTENERS - DISABLED TO AVOID CONFLICTS
-        /*
+        // Setup event listeners with proper touch handling
         function setupEventListeners() {
             console.log('🔧 Setting up event listeners...');
-            // ... complex event listeners removed ...
-            console.log('✅ All event listeners setup complete');
-        }
-        */
-
-        // Initialize when DOM is ready
-        function initializeApp() {
-            console.log('🚀 Initializing CryptoSignAI...');
             
-            // Initialize Telegram WebApp
-            initTelegramWebApp();
-            
-            // Setup basic button handlers with direct references
-            const analyzeBtn = document.getElementById('analyze-btn');
-            if (analyzeBtn) {
-                analyzeBtn.onclick = function(e) {
+            // Navigation tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                const handler = function(e) {
                     e.preventDefault();
-                    console.log('� Analyze button clicked directly');
-                    analyzeSymbol();
-                };
-                console.log('✅ Analyze button handler attached');
-            }
-            
-            const debugBtn = document.getElementById('debug-test-btn');
-            if (debugBtn) {
-                debugBtn.onclick = function(e) {
-                    e.preventDefault();
-                    console.log('🔧 Debug button clicked');
-                    alert('Debug button works!');
-                };
-                console.log('✅ Debug button handler attached');
-            }
-            
-            const quickSignalsBtn = document.getElementById('quick-signals-btn');
-            if (quickSignalsBtn) {
-                quickSignalsBtn.onclick = function(e) {
-                    e.preventDefault();
-                    console.log('⚡ Quick signals button clicked');
-                    getQuickSignals();
-                };
-                console.log('✅ Quick signals button handler attached');
-            }
-            
-            const liveAnalysisBtn = document.getElementById('live-analysis-btn');
-            if (liveAnalysisBtn) {
-                liveAnalysisBtn.onclick = function(e) {
-                    e.preventDefault();
-                    console.log('📊 Live analysis button clicked');
-                    generateLiveAnalysis();
-                };
-                console.log('✅ Live analysis button handler attached');
-            }
-            
-            // Setup tab handlers
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => {
-                tab.onclick = function(e) {
-                    e.preventDefault();
+                    e.stopPropagation();
                     const tabName = this.getAttribute('data-tab');
-                    console.log('� Tab clicked:', tabName);
                     showTab(tabName);
                 };
+                
+                // Use both click and touchend for maximum compatibility
+                tab.addEventListener('click', handler, { passive: false });
+                tab.addEventListener('touchend', handler, { passive: false });
+                console.log('✅ Tab event listener added for:', tab.getAttribute('data-tab'));
             });
-            
-            console.log('✅ App initialization complete');
+
+            // Button handlers - Using standard event listeners
+            const buttonHandlers = [
+                { id: 'analyze-btn', handler: analyzeSymbol, name: 'Analyze' },
+                { id: 'quick-signals-btn', handler: getQuickSignals, name: 'Quick Signals' },
+                { id: 'live-analysis-btn', handler: generateLiveAnalysis, name: 'Live Analysis' },
+                { id: 'upload-chart-btn', handler: () => document.getElementById('chart-upload').click(), name: 'Upload Chart' },
+                { id: 'toggle-back-btn', handler: toggleBackButton, name: 'Toggle Back Button' },
+                { id: 'toggle-settings-btn', handler: toggleSettingsButton, name: 'Toggle Settings Button' },
+                { id: 'toggle-main-btn', handler: toggleMainButton, name: 'Toggle Main Button' },
+                { id: 'debug-test-btn', handler: () => { 
+                    console.log('🔧 DEBUG TEST BUTTON CLICKED!'); 
+                    alert('Debug test button works!'); 
+                }, name: 'Debug Test' }
+            ];
+
+            buttonHandlers.forEach(({ id, handler, name }) => {
+                const element = document.getElementById(id);
+                console.log(`🔍 Setting up button: ${name} (${id})`, element ? 'FOUND' : 'NOT FOUND');
+                
+                if (element) {
+                    const eventHandler = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log(`🚀 ${name} button clicked - HANDLER TRIGGERED`);
+                        console.log('🚀 Event details:', e.type, e.target.id);
+                        
+                        // Visual feedback
+                        this.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            this.style.transform = '';
+                        }, 150);
+                        
+                        console.log(`🚀 About to call handler for ${name}`);
+                        try {
+                            handler();
+                            console.log(`✅ Handler executed successfully for ${name}`);
+                        } catch (error) {
+                            console.error(`❌ Handler error for ${name}:`, error);
+                        }
+                    };
+                    
+                    // Multiple event types for maximum compatibility
+                    element.addEventListener('click', eventHandler, { passive: false });
+                    element.addEventListener('touchend', eventHandler, { passive: false });
+                    element.addEventListener('touchstart', function(e) {
+                        e.preventDefault();
+                        this.style.transform = 'scale(0.95)';
+                        console.log(`👆 ${name} button touch started`);
+                    }, { passive: false });
+                    
+                    console.log(`✅ ${name} button events attached successfully`);
+                } else {
+                    console.error(`❌ ${name} button (${id}) not found in DOM`);
+                }
+            });
+
+            // Chart upload handler
+            const uploadInput = document.getElementById('chart-upload');
+            if (uploadInput) {
+                uploadInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        updateDisplay('chart-analysis-result', `
+                            <div style="color: #4CAF50;">✅ Chart uploaded: ${file.name}</div>
+                            <div style="margin-top: 10px;">Analysis would be performed here</div>
+                        `);
+                    }
+                });
+                console.log('✅ Chart upload handler attached');
+            }
+
+            console.log('✅ All event listeners setup complete');
         }
-        
+
+        // Initialize when DOM is ready
         if (document.readyState === 'loading') {
             console.log('📄 DOM is loading, adding event listener...');
-            document.addEventListener('DOMContentLoaded', initializeApp);
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('📄 DOM Content Loaded - initializing...');
+                setupEventListeners();
+                initTelegramWebApp();
+            });
         } else {
             console.log('📄 DOM already ready - initializing immediately...');
-            initializeApp();
+            setupEventListeners();
+            initTelegramWebApp();
         }
         
         // Global click debugging
