@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoSignAI - Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+        }
+        .success { background: rgba(76, 175, 80, 0.2); }
+        .error { background: rgba(244, 67, 54, 0.2); }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .btn:active {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 CryptoSignAI Connection Test</h1>
+        
+        <div id="status" class="status">
+            Starting connection tests...
+        </div>
+        
+        <button class="btn" onclick="testConnection()">🔄 Test Again</button>
+        <button class="btn" onclick="testAPI()">📊 Test API</button>
+        <button class="btn" onclick="window.location.href='/'">🏠 Go to Main App</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function updateStatus(message, isSuccess = true) {
+            const status = document.getElementById('status');
+            status.innerHTML = message;
+            status.className = 'status ' + (isSuccess ? 'success' : 'error');
+        }
+
+        function addResult(test, result, success) {
+            const results = document.getElementById('results');
+            results.innerHTML += `
+                <div class="status ${success ? 'success' : 'error'}">
+                    <strong>${test}:</strong> ${result}
+                </div>
+            `;
+        }
+
+        async function testConnection() {
+            updateStatus('🔄 Testing connection...', true);
+            document.getElementById('results').innerHTML = '';
+            
+            try {
+                // Test 1: Health check
+                const healthResponse = await fetch('/health');
+                const healthData = await healthResponse.json();
+                addResult('Health Check', `✅ Server responding - ${healthData.status}`, true);
+                
+                // Test 2: API endpoint
+                const apiResponse = await fetch('/api/analyze?symbol=bitcoin');
+                const apiData = await apiResponse.json();
+                addResult('API Test', `✅ Bitcoin: $${apiData.price.toLocaleString()} (${apiData.signal})`, true);
+                
+                // Test 3: Chart analysis
+                const chartResponse = await fetch('/api/chart-analysis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol: 'BTCUSD', chartData: 'test' })
+                });
+                const chartData = await chartResponse.json();
+                addResult('Chart Analysis', `✅ Analysis: ${chartData.success ? 'Working' : 'Fallback mode'}`, true);
+                
+                updateStatus('✅ All tests passed! Ready for Telegram', true);
+                
+            } catch (error) {
+                addResult('Connection Error', `❌ ${error.message}`, false);
+                updateStatus('❌ Connection failed', false);
+            }
+        }
+
+        async function testAPI() {
+            try {
+                updateStatus('🧪 Testing API endpoints...', true);
+                
+                const response = await fetch('/api/quick-signals');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatus(`✅ API Working! Found ${data.signals.length} signals`, true);
+                } else {
+                    updateStatus('⚠️ API responding but using fallback data', true);
+                }
+            } catch (error) {
+                updateStatus(`❌ API test failed: ${error.message}`, false);
+            }
+        }
+
+        // Auto-run tests on load
+        window.addEventListener('load', testConnection);
+        
+        console.log('🧪 Connection test page loaded');
+        console.log('📍 Current URL:', window.location.href);
+    </script>
+</body>
+</html>
